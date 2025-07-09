@@ -12,6 +12,7 @@ import { FaApple } from 'react-icons/fa';
 import { FcGoogle } from 'react-icons/fc';
 import { ConnectModal, useCurrentAccount } from '@mysten/dapp-kit';
 import { useUser } from "@/context/UserContext";
+import { authenticateWithGoogle, authenticateWithWallet, sendOTP, verifyOTP } from '@/lib/auth';
 
 // Modern Google OAuth interface
 interface GoogleCredentialResponse {
@@ -49,6 +50,10 @@ export default function SignInPage() {
 	const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 	const { login, user } = useUser();
 	const account = useCurrentAccount();
+	const [showOTPForm, setShowOTPForm] = useState(false);
+	const [otpEmail, setOtpEmail] = useState('');
+	const [otp, setOtp] = useState('');
+	const [isOTPLoading, setIsOTPLoading] = useState(false);
 
 	const [connectModalOpen, setConnectModalOpen] = useState(false);
 
@@ -154,30 +159,26 @@ export default function SignInPage() {
 	// Handle Google OAuth response
 	const handleGoogleResponse = async (response: GoogleCredentialResponse) => {
 		try {
-			const userInfo = decodeJWT(response.credential);
+			const authResult = await authenticateWithGoogle(response.credential);
 			
-			if (!userInfo) {
-				throw new Error('Failed to decode user information');
+			if (authResult.user) {
+				await login({
+					name: authResult.user.name,
+					email: authResult.user.email,
+					emails: [{ address: authResult.user.email, primary: true, verified: true }],
+					avatarUrl: authResult.user.avatarUrl || '/placeholder-user.jpg',
+					walletAddress: authResult.user.walletAddress || '',
+					username: authResult.user.username,
+					bio: authResult.user.bio,
+					location: authResult.user.location,
+				});
 			}
 
-			// Store token in database
-			await storeTokenInDatabase(response.credential, userInfo);
-
-			// Log in user
-			await login({
-				name: userInfo.name,
-				email: userInfo.email,
-				emails: [{ address: userInfo.email, primary: true, verified: userInfo.email_verified }],
-				avatarUrl: userInfo.picture || '/placeholder-user.jpg',
-				walletAddress: '',
-				googleToken: response.credential,
-			});
-
-			console.log('Google login successful:', userInfo);
+			console.log('Google login successful:', authResult);
 			router.push('/landing');
 		} catch (error) {
 			console.error('Google login error:', error);
-			alert('Login failed. Please try again.');
+			alert(`Login failed: ${error.message}`);
 		} finally {
 			setIsGoogleLoading(false);
 		}
@@ -244,41 +245,76 @@ export default function SignInPage() {
 		console.log("Starting wallet connection...");
 		try {
 			if (account) {
-				console.log("Wallet connected:", account.address);
-				await login({
-					name: 'Sui User',
-					email: '',
-					emails: [{ address: '', primary: true, verified: false }],
-					avatarUrl: '/placeholder-user.jpg',
-					walletAddress: account.address,
-				});
-				console.log("User logged in:", user);
+				const authResult = await authenticateWithWallet(account.address);
+				
+				if (authResult.user) {
+					await login({
+						name: authResult.user.name,
+						email: authResult.user.email,
+						emails: [{ address: authResult.user.email, primary: true, verified: false }],
+						avatarUrl: authResult.user.avatarUrl || '/placeholder-user.jpg',
+						walletAddress: authResult.user.walletAddress || account.address,
+						username: authResult.user.username,
+						bio: authResult.user.bio,
+						location: authResult.user.location,
+					});
+				}
+				
+				console.log("Wallet authentication successful:", authResult);
 				router.push('/landing');
-				console.log("Redirecting to /landing...");
 			} else {
 				console.error("No wallet connected.");
 			}
 		} catch (error) {
-			console.error("Error connecting wallet:", error);
+			console.error("Wallet authentication error:", error);
+			alert(`Wallet authentication failed: ${error.message}`);
 		}
 	};
 
-	const handleEmailSignIn = async (e: React.FormEvent) => {
+	const handleSendOTP = async (e: React.FormEvent) => {
 		e.preventDefault();
+		setIsOTPLoading(true);
+		
 		try {
-			// Simulate successful sign in
-			console.log('Signing in with email:', email);
-			router.push('/landing');
-
-			login({
-				name: 'Email User',
-				email: email,
-				emails: [{ address: email, primary: true, verified: false }],
-				avatarUrl: '/placeholder-user.jpg',
-				walletAddress: '',
-			});
+			await sendOTP(email);
+			setOtpEmail(email);
+			setShowOTPForm(true);
+			console.log('OTP sent to:', email);
 		} catch (error) {
-			console.error(error);
+			console.error('Send OTP error:', error);
+			alert(`Failed to send OTP: ${error.message}`);
+		} finally {
+			setIsOTPLoading(false);
+		}
+	};
+
+	const handleVerifyOTP = async (e: React.FormEvent) => {
+		e.preventDefault();
+		setIsOTPLoading(true);
+		
+		try {
+			const authResult = await verifyOTP(otpEmail, otp);
+			
+			if (authResult.user) {
+				await login({
+					name: authResult.user.name,
+					email: authResult.user.email,
+					emails: [{ address: authResult.user.email, primary: true, verified: true }],
+					avatarUrl: authResult.user.avatarUrl || '/placeholder-user.jpg',
+					walletAddress: authResult.user.walletAddress || '',
+					username: authResult.user.username,
+					bio: authResult.user.bio,
+					location: authResult.user.location,
+				});
+			}
+			
+			console.log('OTP verification successful:', authResult);
+			router.push('/landing');
+		} catch (error) {
+			console.error('OTP verification error:', error);
+			alert(`OTP verification failed: ${error.message}`);
+		} finally {
+			setIsOTPLoading(false);
 		}
 	};
 
@@ -476,52 +512,95 @@ export default function SignInPage() {
 							onOpenChange={setConnectModalOpen}
 						/>
 
-						<form
-							onSubmit={handleEmailSignIn}
-							className="space-y-4 sm:space-y-6"
-						>
-							<div className="space-y-2">
-								<Label
-									htmlFor="email"
-									className="text-gray-700 font-semibold text-sm sm:text-base"
+						{!showOTPForm ? (
+							<form
+								onSubmit={handleSendOTP}
+								className="space-y-4 sm:space-y-6"
+							>
+								<div className="space-y-2">
+									<Label
+										htmlFor="email"
+										className="text-gray-700 font-semibold text-sm sm:text-base"
+									>
+										Email Address
+									</Label>
+									<div className="relative">
+										<Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+										<Input
+											id="email"
+											type="email"
+											placeholder="your@email.com"
+											value={email}
+											onChange={(e) => setEmail(e.target.value)}
+											required
+											className="pl-9 sm:pl-10 py-2.5 sm:py-3 text-base sm:text-lg rounded-xl border-2 focus:border-blue-400"
+										/>
+									</div>
+								</div>
+								
+								<Button
+									type="submit"
+									disabled={isOTPLoading}
+									className="w-full py-3 sm:py-4 text-base sm:text-lg font-semibold bg-blue-500 hover:bg-blue-600 text-white rounded-xl disabled:opacity-50"
 								>
-									Email Address
-								</Label>
-								<div className="relative">
-									<Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
+									{isOTPLoading ? 'Sending...' : 'Send Login Code'}
+								</Button>
+							</form>
+						) : (
+							<form
+								onSubmit={handleVerifyOTP}
+								className="space-y-4 sm:space-y-6"
+							>
+								<div className="space-y-2">
+									<Label className="text-gray-700 font-semibold text-sm sm:text-base">
+										Enter the 6-digit code sent to {otpEmail}
+									</Label>
 									<Input
-										id="email"
-										type="email"
-										placeholder="your@email.com"
-										value={email}
-										onChange={(e) => setEmail(e.target.value)}
+										type="text"
+										placeholder="000000"
+										value={otp}
+										onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
 										required
-										className="pl-9 sm:pl-10 py-2.5 sm:py-3 text-base sm:text-lg rounded-xl border-2 focus:border-blue-400"
+										maxLength={6}
+										className="text-center text-2xl tracking-widest py-3 rounded-xl border-2 focus:border-blue-400"
 									/>
 								</div>
-							</div>
-							
-							<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-0">
-								<label className="flex items-center space-x-2 cursor-pointer">
-									<input type="checkbox" className="rounded border-gray-300" />
-									<span className="text-xs sm:text-sm text-gray-600">
-										Remember me
-									</span>
-								</label>
-								<Link
-									href="/auth/forgot-password"
-									className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-semibold"
-								>
-									Forgot password?
-								</Link>
-							</div>
-							<Button
-								type="submit"
-								className="w-full py-3 sm:py-4 text-base sm:text-lg font-semibold bg-blue-500 hover:bg-blue-600 text-white rounded-xl"
-							>
-								Sign In to Suilens
-							</Button>
-						</form>
+								
+								<div className="flex gap-3">
+									<Button
+										type="button"
+										variant="outline"
+										onClick={() => {
+											setShowOTPForm(false);
+											setOtp('');
+											setOtpEmail('');
+										}}
+										className="flex-1"
+									>
+										Back
+									</Button>
+									<Button
+										type="submit"
+										disabled={isOTPLoading || otp.length !== 6}
+										className="flex-1 bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
+									>
+										{isOTPLoading ? 'Verifying...' : 'Verify Code'}
+									</Button>
+								</div>
+								
+								<div className="text-center">
+									<button
+										type="button"
+										onClick={() => handleSendOTP({ preventDefault: () => {} } as React.FormEvent)}
+										className="text-blue-600 hover:text-blue-700 text-sm font-semibold"
+										disabled={isOTPLoading}
+									>
+										Resend Code
+									</button>
+								</div>
+							</form>
+						)}
+						
 						<div className="text-center pt-4">
 							<p className="text-gray-600 text-xs sm:text-sm">
 								Don't have an account?{' '}

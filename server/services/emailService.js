@@ -16,27 +16,81 @@ oauth2Client.setCredentials({
 
 // Create Nodemailer transporter
 const createTransporter = async () => {
-  const accessToken = await oauth2Client.getAccessToken();
+  try {
+    const accessToken = await oauth2Client.getAccessToken();
 
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      type: 'OAuth2',
-      user: process.env.EMAIL_USERNAME,
-      clientId: process.env.GMAIL_CLIENT_ID,
-      clientSecret: process.env.GMAIL_CLIENT_SECRET,
-      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
-      accessToken: accessToken.token,
-    },
-  });
+    return nodemailer.createTransporter({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: process.env.EMAIL_USERNAME,
+        clientId: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+        accessToken: accessToken.token,
+      },
+    });
+  } catch (error) {
+    console.error('Error creating email transporter:', error);
+    // Fallback to basic SMTP if OAuth fails
+    return nodemailer.createTransporter({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: process.env.SMTP_PORT || 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USERNAME,
+        pass: process.env.EMAIL_PASSWORD,
+      },
+    });
+  }
 };
 
-// Function to send a recovery email
+// Function to send OTP email
+const sendOTPEmail = async (email, otp) => {
+  const transporter = await createTransporter();
+
+  const mailOptions = {
+    from: `"Suilens" <${process.env.EMAIL_USERNAME}>`,
+    to: email,
+    subject: 'Your Suilens Login Code',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #4DA2FF; margin: 0;">Suilens</h1>
+        </div>
+        
+        <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px; text-align: center;">
+          <h2 style="color: #333; margin-bottom: 20px;">Your Login Code</h2>
+          <div style="background-color: white; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <span style="font-size: 32px; font-weight: bold; color: #4DA2FF; letter-spacing: 5px;">${otp}</span>
+          </div>
+          <p style="color: #666; margin: 20px 0;">This code will expire in 10 minutes.</p>
+          <p style="color: #666; font-size: 14px;">If you didn't request this code, please ignore this email.</p>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px; color: #999; font-size: 12px;">
+          <p>© 2025 Suilens. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+    text: `Your Suilens login code is: ${otp}. This code will expire in 10 minutes.`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`OTP email sent to ${email}`);
+  } catch (error) {
+    console.error(`Failed to send OTP email to ${email}:`, error);
+    throw new Error('Error sending email');
+  }
+};
+
+// Function to send a recovery email (keeping existing functionality)
 const sendRecoveryEmail = async (email, token) => {
   const transporter = await createTransporter();
 
   const mailOptions = {
-    from: 'no-reply@passwordmanager.com',
+    from: `"Suilens" <${process.env.EMAIL_USERNAME}>`,
     to: email,
     subject: 'Password Recovery',
     text: `To reset your password, use this token: ${token}`,
@@ -52,4 +106,4 @@ const sendRecoveryEmail = async (email, token) => {
   }
 };
 
-module.exports = { sendRecoveryEmail };
+module.exports = { sendOTPEmail, sendRecoveryEmail };

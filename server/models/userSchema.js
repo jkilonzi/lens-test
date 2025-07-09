@@ -3,64 +3,101 @@ const sequelize = require('../config/db');
 
 const User = sequelize.define('User', {
   id: {
-    type: DataTypes.UUID,
-    defaultValue: DataTypes.UUIDV4, // This will automatically generate UUID
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
     primaryKey: true,
   },
   email: {
-    type: DataTypes.STRING(100),
+    type: DataTypes.STRING(255),
     allowNull: false,
     unique: true,
   },
-  two_factor_enabled: {
-    type: DataTypes.BOOLEAN,
-    defaultValue: false,
+  walletAddress: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    unique: true,
+  },
+  username: {
+    type: DataTypes.STRING(100),
+    allowNull: true,
+    unique: true,
+  },
+  name: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  avatarUrl: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  bio: {
+    type: DataTypes.TEXT,
+    allowNull: true,
+  },
+  location: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+  },
+  role: {
+    type: DataTypes.STRING(50),
+    defaultValue: 'user',
+    allowNull: false,
   },
   google_oauth_id: {
     type: DataTypes.STRING(255),
     allowNull: true,
   },
-  created_at: {
+  createdAt: {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW,
     allowNull: false,
   },
-  updated_at: {
+  updatedAt: {
     type: DataTypes.DATE,
     defaultValue: Sequelize.NOW,
     allowNull: false,
-  },
-  last_login: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
-  master_password_hash: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  master_password_salt: {
-    type: DataTypes.TEXT,
-    allowNull: true,
-  },
-  username: {
-    type: DataTypes.STRING(100),
-    allowNull: true,
   },
 }, {
   tableName: 'User',
-  // schema: 'app_data',
-  underscored: true,
+  underscored: false,
+  timestamps: true,
+});
+
+// Create OTP model
+const OTP = sequelize.define('OTP', {
+  id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true,
+  },
+  email: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+  },
+  otp: {
+    type: DataTypes.STRING(6),
+    allowNull: false,
+  },
+  expiresAt: {
+    type: DataTypes.DATE,
+    allowNull: false,
+  },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    references: {
+      model: User,
+      key: 'id',
+    },
+  },
+}, {
+  tableName: 'otps',
+  underscored: false,
   timestamps: false,
 });
 
-// This ensures that created_at and updated_at are updated automatically when an entry is modified
-User.beforeUpdate((user, options) => {
-  user.updated_at = new Date();
-});
+// Define associations
+User.hasMany(OTP, { foreignKey: 'userId', onDelete: 'CASCADE' });
+OTP.belongsTo(User, { foreignKey: 'userId' });
 
-User.beforeCreate((user, options) => {
-  user.created_at = new Date();  // Explicitly set created_at
-});
-
-// Export the model for use in other parts of the application
-module.exports = User;
+module.exports = { User, OTP };

@@ -9,6 +9,7 @@ import { FaApple, FaWallet } from "react-icons/fa"
 import { useCurrentAccount, ConnectModal } from "@mysten/dapp-kit"
 import { useUser } from "@/context/UserContext"
 import { useRouter } from 'next/navigation'
+import { authenticateWithGoogle, authenticateWithWallet, sendOTP, verifyOTP } from '@/lib/auth'
 
 const wallets = [
   { name: "Slush", icon: "/download (2) 1.png" },
@@ -27,6 +28,12 @@ export default function SignUpPage() {
   const [connectModalOpen, setConnectModalOpen] = useState(false)
   const [mounted, setMounted] = useState(false)
 
+  const [showOtpDialog, setShowOtpDialog] = useState(false)
+  const [email, setEmail] = useState("")
+  const [otp, setOtp] = useState("")
+  const [isVerifying, setIsVerifying] = useState(false)
+  const [otpError, setOtpError] = useState("")
+
   useEffect(() => {
     setMounted(true)
   }, [])
@@ -37,17 +44,26 @@ export default function SignUpPage() {
       if (account?.address && !user) {
         console.log("Wallet connected, auto-redirecting...", account.address)
         try {
-          await login({
-            name: 'Sui User',
-            email: '',
-            emails: [{ address: '', primary: true, verified: false }],
-            avatarUrl: '/placeholder-user.jpg',
-            walletAddress: account.address,
-          })
-          console.log("User logged in, redirecting to landing...")
+          const authResult = await authenticateWithWallet(account.address)
+          
+          if (authResult.user) {
+            await login({
+              name: authResult.user.name,
+              email: authResult.user.email,
+              emails: [{ address: authResult.user.email, primary: true, verified: false }],
+              avatarUrl: authResult.user.avatarUrl || '/placeholder-user.jpg',
+              walletAddress: authResult.user.walletAddress || account.address,
+              username: authResult.user.username,
+              bio: authResult.user.bio,
+              location: authResult.user.location,
+            })
+          }
+          
+          console.log("Wallet authentication successful, redirecting to landing...")
           router.push('/landing')
         } catch (error) {
-          console.error("Error during auto-login:", error)
+          console.error("Error during wallet authentication:", error)
+          alert(`Wallet authentication failed: ${error.message}`)
         }
       }
       else if (user && account?.address) {
@@ -61,23 +77,24 @@ export default function SignUpPage() {
 
   const handleEmailSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("handleEmailSignup started")
+    setIsVerifying(true)
+    setOtpError("")
+    
     try {
       const form = e.target as HTMLFormElement
       const formData = new FormData(form)
       const emailValue = formData.get('email') as string
       
       setEmail(emailValue)
-      
-      // Simulate sending OTP
-      console.log("Sending OTP to:", emailValue)
-      // Here you would typically call your API to send OTP
-      // await sendOtp(emailValue)
-      //Bevon do your thing
+      await sendOTP(emailValue)
       
       setShowOtpDialog(true)
+      console.log("OTP sent to:", emailValue)
     } catch (error) {
-      console.error("Error during email signup:", error)
+      console.error("Error sending OTP:", error)
+      setOtpError(`Failed to send OTP: ${error.message}`)
+    } finally {
+      setIsVerifying(false)
     }
   }
 
@@ -87,28 +104,26 @@ export default function SignUpPage() {
     setOtpError("")
     
     try {
-      // Simulate OTP verification
-      console.log("Verifying OTP:", otp)
+      const authResult = await verifyOTP(email, otp)
       
-      // Mock verification - in real app, call your API
-      await new Promise(resolve => setTimeout(resolve, 2000))
-      
-      // Mock success condition, add the OTP backend
-      if (otp === "123456") {
+      if (authResult.user) {
         await login({
-          name: email.split('@')[0],
-          email: email,
-          emails: [{ address: email, primary: true, verified: true }],
-          avatarUrl: '/placeholder-user.jpg',
-          walletAddress: undefined,
+          name: authResult.user.name,
+          email: authResult.user.email,
+          emails: [{ address: authResult.user.email, primary: true, verified: true }],
+          avatarUrl: authResult.user.avatarUrl || '/placeholder-user.jpg',
+          walletAddress: authResult.user.walletAddress || '',
+          username: authResult.user.username,
+          bio: authResult.user.bio,
+          location: authResult.user.location,
         })
-        router.push('/auth/signin')
-      } else {
-        setOtpError("Invalid OTP. Please try again.")
       }
+      
+      console.log("OTP verification successful:", authResult)
+      router.push('/landing')
     } catch (error) {
-      console.error("Error during OTP verification:", error)
-      setOtpError("Verification failed. Please try again.")
+      console.error("Error verifying OTP:", error)
+      setOtpError(`Verification failed: ${error.message}`)
     } finally {
       setIsVerifying(false)
     }
@@ -116,13 +131,12 @@ export default function SignUpPage() {
 
   const resendOtp = async () => {
     try {
-      console.log("Resending OTP to:", email)
-      // Here you would call your API to resend OTP
-      // await sendOtp(email)
+      await sendOTP(email)
       setOtpError("")
-      // Show success message if needed
+      console.log("OTP resent to:", email)
     } catch (error) {
       console.error("Error resending OTP:", error)
+      setOtpError(`Failed to resend OTP: ${error.message}`)
     }
   }
 
@@ -208,8 +222,12 @@ export default function SignUpPage() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full py-3 text-sm sm:text-base font-medium bg-[#56A8FF] hover:bg-blue-500 text-white rounded">
-              Sign Up with Email
+            <Button 
+              type="submit" 
+              disabled={isVerifying}
+              className="w-full py-3 text-sm sm:text-base font-medium bg-[#56A8FF] hover:bg-blue-500 text-white rounded disabled:opacity-50"
+            >
+              {isVerifying ? 'Sending...' : 'Sign Up with Email'}
             </Button>
           </form>
 
@@ -246,7 +264,7 @@ export default function SignUpPage() {
                 <input
                   type="text"
                   value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
+                  onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="Enter 6-digit code"
                   className="w-full border border-gray-300 rounded px-3 py-2 text-center text-lg tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-400"
                   maxLength={6}
@@ -261,7 +279,11 @@ export default function SignUpPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setShowOtpDialog(false)}
+                  onClick={() => {
+                    setShowOtpDialog(false)
+                    setOtp("")
+                    setOtpError("")
+                  }}
                   className="flex-1"
                   disabled={isVerifying}
                 >
@@ -270,7 +292,7 @@ export default function SignUpPage() {
                 <Button
                   type="submit"
                   className="flex-1 bg-[#56A8FF] hover:bg-blue-500"
-                  disabled={isVerifying}
+                  disabled={isVerifying || otp.length !== 6}
                 >
                   {isVerifying ? "Verifying..." : "Verify"}
                 </Button>
@@ -281,6 +303,7 @@ export default function SignUpPage() {
               <button
                 type="button"
                 onClick={resendOtp}
+                disabled={isVerifying}
                 className="text-[#56A8FF] hover:underline text-sm"
               >
                 Didn't receive the code? Resend

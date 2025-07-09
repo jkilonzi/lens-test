@@ -2,82 +2,132 @@ const express = require('express');
 const router = express.Router();
 const Joi = require('joi');
 const rateLimit = require('express-rate-limit');
-const { signup, loginWithEmailPassword, loginWithGoogle, logout, refreshToken, checkAuth } = require('../controllers/authController');
+const { 
+  googleAuth, 
+  walletAuth, 
+  sendOTP, 
+  verifyOTP, 
+  logout, 
+  refreshToken, 
+  checkAuth 
+} = require('../controllers/authController');
 const verifyToken = require('../middleware/authenticateToken');
 
-// Rate Limiting for login attempts
-const loginLimiter = rateLimit({
+// Rate Limiting for authentication attempts
+const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit to 5 requests per IP per window
+  max: 10, // Limit to 10 requests per IP per window
   message: {
-    error: 'Too many login attempts. Please try again later.',
+    error: 'Too many authentication attempts. Please try again later.',
   },
 });
 
-// Joi Validation for signup inputs
-const signupSchema = Joi.object({
-  email: Joi.string().email().required().messages({
-    'string.email': 'Please provide a valid email address',
-    'any.required': 'Email is required',
-  }),
-  username: Joi.string().trim().required().messages({
-    'any.required': 'Username is required',
-  }),
+// Rate Limiting for OTP requests
+const otpLimiter = rateLimit({
+  windowMs: 5 * 60 * 1000, // 5 minutes
+  max: 3, // Limit to 3 OTP requests per IP per window
+  message: {
+    error: 'Too many OTP requests. Please try again later.',
+  },
 });
 
-// Joi Validation for email-password login inputs
-const emailPasswordLoginSchema = Joi.object({
-  email: Joi.string().email().required().messages({
-    'string.email': 'Please provide a valid email address',
-    'any.required': 'Email is required',
-  }),
-});
-
-// Joi Validation for Google login inputs
-const googleLoginSchema = Joi.object({
+// Joi Validation Schemas
+const googleAuthSchema = Joi.object({
   googleToken: Joi.string().required().messages({
     'any.required': 'Google token is required',
     'string.base': 'Invalid Google token format',
   }),
+  name: Joi.string().optional(),
+  avatarUrl: Joi.string().uri().optional(),
+  bio: Joi.string().optional(),
+  location: Joi.string().optional(),
 });
 
-// Route for user signup
-router.post('/signup', async (req, res, next) => {
+const walletAuthSchema = Joi.object({
+  walletAddress: Joi.string().required().messages({
+    'any.required': 'Wallet address is required',
+    'string.base': 'Invalid wallet address format',
+  }),
+  name: Joi.string().optional(),
+  avatarUrl: Joi.string().uri().optional(),
+  bio: Joi.string().optional(),
+  location: Joi.string().optional(),
+});
+
+const sendOTPSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.email': 'Please provide a valid email address',
+    'any.required': 'Email is required',
+  }),
+});
+
+const verifyOTPSchema = Joi.object({
+  email: Joi.string().email().required().messages({
+    'string.email': 'Please provide a valid email address',
+    'any.required': 'Email is required',
+  }),
+  otp: Joi.string().length(6).pattern(/^[0-9]+$/).required().messages({
+    'string.length': 'OTP must be 6 digits',
+    'string.pattern.base': 'OTP must contain only numbers',
+    'any.required': 'OTP is required',
+  }),
+  name: Joi.string().optional(),
+  avatarUrl: Joi.string().uri().optional(),
+  bio: Joi.string().optional(),
+  location: Joi.string().optional(),
+});
+
+// Route for Google authentication
+router.post('/google', authLimiter, async (req, res, next) => {
   try {
-    const { error } = signupSchema.validate(req.body);
+    const { error } = googleAuthSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ errors: error.details });
     }
 
-    await signup(req, res);
+    await googleAuth(req, res);
   } catch (err) {
     next(err);
   }
 });
 
-// Route for email-password login
-router.post('/login', loginLimiter, async (req, res, next) => {
+// Route for wallet authentication
+router.post('/wallet', authLimiter, async (req, res, next) => {
   try {
-    const { error } = emailPasswordLoginSchema.validate(req.body);
+    const { error } = walletAuthSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ errors: error.details });
     }
 
-    await loginWithEmailPassword(req, res);
+    await walletAuth(req, res);
   } catch (err) {
     next(err);
   }
 });
 
-// Route for Google login
-router.post('/login/google', async (req, res, next) => {
+// Route for sending OTP
+router.post('/otp/send', otpLimiter, async (req, res, next) => {
   try {
-    const { error } = googleLoginSchema.validate(req.body);
+    const { error } = sendOTPSchema.validate(req.body);
     if (error) {
       return res.status(400).json({ errors: error.details });
     }
 
-    await loginWithGoogle(req, res);
+    await sendOTP(req, res);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Route for verifying OTP
+router.post('/otp/verify', authLimiter, async (req, res, next) => {
+  try {
+    const { error } = verifyOTPSchema.validate(req.body);
+    if (error) {
+      return res.status(400).json({ errors: error.details });
+    }
+
+    await verifyOTP(req, res);
   } catch (err) {
     next(err);
   }
