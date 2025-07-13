@@ -1,0 +1,13 @@
+#DB_HOST=ep-late-art-a8fug3r4.eastus2.azure.neon.tech
+#DB_NAME=neondb
+#DB_USER=neondb_owner
+#DB_PASSWORD=npg_nYfheICE9P2m
+#DB_SSLMODE=require
+#DB_CHANNELBINDING='require'
+#DB_PORT=5432
+
+NEXT_PUBLIC_GOOGLE_CLIENT_ID=865460074360-hjj90mh9o027p3gtktd355fak2eco7cg.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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"
+NEXTAUTH_SECRET=3VNL4h/qlQclChk61u5zzQE7GnflZF0UYOwRabY4zPJxfiRH588LxOa02awCJK+G
+NEXT_PUBLIC_API_URL=http://localhost:3009
+NODE_ENV=production

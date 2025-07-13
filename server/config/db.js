@@ -18,7 +18,7 @@ const sequelize = new Sequelize({
   password: process.env.DB_PASSWORD,
   database: process.env.DB_NAME,
   port: parseInt(process.env.DB_PORT, 10),
-  logging: false, // Disable logging queries in the console
+  logging: console.log, // Enable logging queries in the console
   dialectOptions: {
     ssl: {
       require: process.env.DB_SSLMODE === 'require',
