@@ -1,6 +1,7 @@
 "use client"
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import { checkAuthStatus } from "@/lib/auth"
 
 type User = {
   name: string
@@ -26,7 +27,7 @@ type User = {
 type UserContextType = {
   user: User | null
   setUser: React.Dispatch<React.SetStateAction<User | null>>
-  login: (user: User) => void
+  login: (user: User) => Promise<void>
   logout: () => void
   updateUserProfile: (updates: Partial<User>) => void
   updateProfileImage: (imageUrl: string) => void
@@ -37,14 +38,7 @@ type UserContextType = {
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>({
-    name: "No Name",
-    email: "",
-    username: "Sui User",
-    avatarUrl: "https://via.placeholder.com/100",
-    walletAddress: "",
-    emails: [],
-  });
+  const [user, setUser] = useState<User | null>(null);
 
   const updateUserProfile = (updates: Partial<User>) => {
     setUser(prev => prev ? { ...prev, ...updates } : prev);
@@ -62,25 +56,52 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(prev => prev ? ({ ...prev, email }): prev);
   };
 
-  const login = async (userData: User) => { // Make login async
-        console.log("Login function called with:", userData); // Log input
-        setUser(userData);
-        console.log("User set in context:", user); // Log after setUser
-    };
-  const logout = () => setUser(null)
+  const login = async (userData: User) => {
+    try {
+      // Optionally verify session with backend here or rely on checkAuthStatus on mount
+      setUser(userData);
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+  };
 
+  const logout = () => setUser(null);
+
+  // On mount, check auth status from backend to sync user state
+  useEffect(() => {
+    const verifyUser = async () => {
+      try {
+        const authResponse = await checkAuthStatus();
+        if (authResponse.user) {
+          // Ensure emails property exists to satisfy User type
+          const userWithEmails = {
+            ...authResponse.user,
+            emails: authResponse.user.emails || [],
+          };
+          setUser(userWithEmails);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        setUser(null);
+        console.error("Failed to verify auth status:", error);
+      }
+    };
+
+    verifyUser();
+  }, []);
+
+  // Persist user state to localStorage
   useEffect(() => {
     if (user) {
       localStorage.setItem('user', JSON.stringify(user));
-      console.log("User saved to local storage:", user); // Log saved user data
     } else {
       localStorage.removeItem('user');
-      console.log("User removed from local storage."); // Log removal
     }
-  }, [user])
+  }, [user]);
 
   return (
-    <UserContext.Provider value={{ user, setUser,updateUserProfile, updateProfileImage, updateUserName, updateUserEmail, login, logout }}>
+    <UserContext.Provider value={{ user, setUser, updateUserProfile, updateProfileImage, updateUserName, updateUserEmail, login, logout }}>
       {children}
     </UserContext.Provider>
   )

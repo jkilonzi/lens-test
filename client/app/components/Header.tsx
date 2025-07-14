@@ -21,7 +21,7 @@ export default function Header() {
 	const router = useRouter();
 
 	// Check if user is authenticated (you can modify this logic based on your auth system)
-	const isAuthenticated = user && account?.address;
+	const isAuthenticated = !!user || !!(account && account.address); // Consider user state or wallet connection for authentication
 
 	// Close mobile menu when resizing to desktop
 	useEffect(() => {
@@ -144,7 +144,7 @@ export default function Header() {
 							{showDropdown && (
 								<div className="absolute right-0 mt-2 z-50">
 									<ProfileDropdown
-										walletAddress={user?.walletAddress ?? account.address ?? ''}
+										walletAddress={user?.walletAddress ?? (account ? account.address : '')}
 										avatarUrl={user?.avatarUrl}
 										onLogout={() => {
 											setShowDropdown(false);
