@@ -59,11 +59,19 @@ export default function Header() {
 	const handleNavigation = (href: string) => {
 		if (!isAuthenticated) {
 			router.push('/auth/signin');
-				authMethod: 'wallet',
-				walletConnected: true,
 			return;
 		}
 		router.push(href);
+		setMobileMenuOpen(false);
+	};
+
+	// Handle create event navigation with wallet check
+	const handleCreateEvent = () => {
+		if (!isAuthenticated) {
+			router.push('/auth/signin');
+			return;
+		}
+		router.push('/create');
 		setMobileMenuOpen(false);
 	};
 

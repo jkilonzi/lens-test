@@ -335,16 +335,10 @@ export default function SignInPage() {
 	useEffect(() => {
 		console.log("useEffect triggered. Account:", account, "User:", user);
 		if (account && !user) {
-			login({
-				name: 'Sui User',
-				email: '',
-				emails: [{ address: '', primary: true, verified: false }],
-				avatarUrl: '/placeholder-user.jpg',
-				walletAddress: account.address,
-			});
-			router.push('/landing');
+			// Auto-authenticate with wallet if no user is logged in
+			handleWalletConnect();
 		}
-	}, [account, login, user, router]);
+	}, [account, user]);
 
 	return (
 		<div className="min-h-screen font-inter bg-white">

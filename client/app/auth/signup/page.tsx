@@ -241,6 +241,8 @@ export default function SignUpPage() {
               username: authResult.user.username || '',
               bio: authResult.user.bio || '',
               location: authResult.user.location || '',
+              authMethod: 'wallet',
+              walletConnected: true,
             })
             router.push('/landing')
           }

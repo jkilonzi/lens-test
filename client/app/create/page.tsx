@@ -32,12 +32,16 @@ import Link from "next/link"
 import { useEventContext } from "@/context/EventContext"
 import { mintPOAP, suilensService } from "@/lib/sui-client"
 import Header from '@/app/components/Header'
+import WalletConnectionModal from "@/components/WalletConnectionModal"
+import { useCurrentAccount } from "@mysten/dapp-kit"
 
 export default function CreateEventPage() {
-  const { user } = useUser()
+  const { user, canCreateEvents, needsWalletForEventCreation, connectWallet } = useUser()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const { addEvent } = useEventContext()
+  const account = useCurrentAccount()
+  const [showWalletModal, setShowWalletModal] = useState(false)
 
   // Redirect to signin if not logged in
   useEffect(() => {
@@ -48,6 +52,13 @@ export default function CreateEventPage() {
       return () => clearTimeout(timeoutId)
     }
   }, [user, router])
+
+  // Check wallet connection when account changes
+  useEffect(() => {
+    if (account?.address && user && needsWalletForEventCreation()) {
+      connectWallet(account.address)
+    }
+  }, [account?.address, user, needsWalletForEventCreation, connectWallet])
 
   const [eventData, setEventData] = useState({
     title: "",
@@ -131,6 +142,13 @@ export default function CreateEventPage() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    
+    // Check if user can create events
+    if (!canCreateEvents()) {
+      setShowWalletModal(true)
+      return
+    }
+    
     setIsCreating(true)
 
     try {
@@ -236,10 +254,28 @@ export default function CreateEventPage() {
     setPoapDialogOpen(false)
   }
 
+  const handleWalletConnected = () => {
+    setShowWalletModal(false)
+    // User can now proceed with event creation
+  }
+
+  // Show loading state while checking authentication
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <Header />
+      
       {/* Form Section with Back Button */}
       <div className="max-w-md mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="mb-6">
@@ -250,10 +286,41 @@ export default function CreateEventPage() {
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Create Event</h1>
         
-        {/* Wallet Status Indicator */}
-        <div className="mb-6">
-          <WalletStatusIndicator />
-        </div>
+        {/* Wallet Connection Status */}
+        {needsWalletForEventCreation() && (
+          <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-medium text-amber-800">Wallet Required</h3>
+                <p className="text-sm text-amber-700">Connect your wallet to create events and mint POAPs</p>
+              </div>
+              <Button
+                type="button"
+                onClick={() => setShowWalletModal(true)}
+                className="bg-amber-600 hover:bg-amber-700 text-white text-sm px-4 py-2"
+              >
+                Connect Wallet
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {canCreateEvents() && (
+          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+            <div className="flex items-center">
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-3"></div>
+              <div>
+                <h3 className="text-sm font-medium text-green-800">Ready to Create</h3>
+                <p className="text-sm text-green-700">
+                  {user.authMethod === 'wallet' 
+                    ? 'Wallet authenticated - you can create events'
+                    : 'Wallet connected - you can create events and mint POAPs'
+                  }
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Image Upload Section */}
@@ -589,7 +656,7 @@ export default function CreateEventPage() {
           {/* Create Event Button */}
           <Button
             type="submit"
-            disabled={isCreating}
+            disabled={isCreating || !canCreateEvents()}
             className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium disabled:opacity-50"
           >
             {isCreating ? (
@@ -597,11 +664,22 @@ export default function CreateEventPage() {
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 Creating Event...
               </>
+            ) : !canCreateEvents() ? (
+              'Connect Wallet to Create Event'
             ) : (
               'Create Event'
             )}
           </Button>
         </form>
+        
+        {/* Wallet Connection Modal */}
+        <WalletConnectionModal
+          isOpen={showWalletModal}
+          onClose={() => setShowWalletModal(false)}
+          onWalletConnected={handleWalletConnected}
+          title="Connect Wallet to Create Events"
+          description="To create events and mint POAPs, you need to connect your wallet first. This ensures secure blockchain interactions."
+        />
       </div>
     </div>
   )
