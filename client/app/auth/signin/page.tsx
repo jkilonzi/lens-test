@@ -257,8 +257,6 @@ export default function SignInPage() {
 						username: authResult.user.username,
 						bio: authResult.user.bio,
 						location: authResult.user.location,
-						authMethod: 'wallet',
-						walletConnected: true,
 					});
 				}
 				
@@ -307,6 +305,8 @@ export default function SignInPage() {
 					username: authResult.user.username,
 					bio: authResult.user.bio,
 					location: authResult.user.location,
+					authMethod: 'email',
+					walletConnected: !!authResult.user.walletAddress,
 				});
 			}
 			

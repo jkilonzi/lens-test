@@ -59,6 +59,8 @@ export default function Header() {
 	const handleNavigation = (href: string) => {
 		if (!isAuthenticated) {
 			router.push('/auth/signin');
+				authMethod: 'wallet',
+				walletConnected: true,
 			return;
 		}
 		router.push(href);

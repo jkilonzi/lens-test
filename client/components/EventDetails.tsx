@@ -211,13 +211,15 @@ export default function EventDetails({ eventData, onClose }: EventDetailsProps) 
                   </Button>
                 )}
                 {isCheckedIn && !hasClaimedPOAP && (
-                  <Button
-                    className="w-full text-lg font-semibold py-4 rounded-xl shadow-lg bg-blue-600 hover:bg-blue-700 mt-4"
-                    onClick={handleClaimPOAP}
-                    disabled={isMinting}
-                  >
-                    {isMinting ? "Minting POAP..." : "Claim POAP"}
-                  </Button>
+                  <>
+                    <Button
+                      className="w-full text-lg font-semibold py-4 rounded-xl shadow-lg bg-blue-600 hover:bg-blue-700 mt-4"
+                      onClick={handleClaimPOAP}
+                      disabled={isMinting}
+                    >
+                      {isMinting ? "Minting POAP..." : isWalletRequired() ? "Connect Wallet to Claim POAP" : "Claim POAP"}
+                    </Button>
+                  </>
                 )}
                 {hasClaimedPOAP && (
                   <p className="text-green-400 text-center font-semibold mt-4">
@@ -228,6 +230,15 @@ export default function EventDetails({ eventData, onClose }: EventDetailsProps) 
             </Card>
           </div>
         </div>
+
+        {/* Wallet Connection Modal */}
+        <WalletConnectionModal
+          isOpen={showWalletModal}
+          onClose={() => setShowWalletModal(false)}
+          onWalletConnected={handleWalletConnected}
+          title="Connect Wallet to Claim POAP"
+          description="To claim your POAP NFT, you need to connect your wallet first."
+        />
       </div>
     </div>
   );

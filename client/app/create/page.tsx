@@ -582,21 +582,40 @@ export default function CreateEventPage() {
           </div>
 
           {/* Create Event Button */}
-          <Button
-            type="submit"
-            disabled={isCreating}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium disabled:opacity-50"
-          >
-            {isCreating ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                Creating Event...
-              </>
-            ) : (
-              'Create Event'
-            )}
-          </Button>
+          {isWalletRequired() ? (
+            <Button
+              type="button"
+              onClick={handleCreateEventClick}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium"
+            >
+              Connect Wallet to Create Event
+            </Button>
+          ) : (
+            <Button
+              type="submit"
+              disabled={isCreating}
+              className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg font-medium disabled:opacity-50"
+            >
+              {isCreating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating Event...
+                </>
+              ) : (
+                'Create Event'
+              )}
+            </Button>
+          )}
         </form>
+
+        {/* Wallet Connection Modal */}
+        <WalletConnectionModal
+          isOpen={showWalletModal}
+          onClose={() => setShowWalletModal(false)}
+          onWalletConnected={handleWalletConnected}
+          title="Connect Wallet to Create Events"
+          description="To create events and mint POAPs on the Sui blockchain, you need to connect your wallet first."
+        />
       </div>
     </div>
   )

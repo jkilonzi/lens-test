@@ -59,6 +59,8 @@ export default function HomePage() {
 				emails: [{ address: '', primary: true, verified: false }],
 				avatarUrl: 'https://via.placeholder.com/100',
 				walletAddress: account.address,
+				authMethod: 'wallet',
+				walletConnected: true,
 			});
 		}
 	}, [account, login, user]);
