@@ -22,6 +22,8 @@ type User = {
   avatarUrl?: string
   googleId?:string
   googleToken?:string
+  authMethod?: 'email' | 'google' | 'wallet'
+  walletConnected?: boolean
 }
 
 type UserContextType = {
@@ -33,6 +35,8 @@ type UserContextType = {
   updateProfileImage: (imageUrl: string) => void
   updateUserName: (name: string) => void
   updateUserEmail: (email: string) => void
+  connectWallet: (walletAddress: string) => void
+  isWalletRequired: () => boolean
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -56,6 +60,17 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(prev => prev ? ({ ...prev, email }): prev);
   };
 
+  const connectWallet = (walletAddress: string) => {
+    setUser(prev => prev ? { 
+      ...prev, 
+      walletAddress, 
+      walletConnected: true 
+    } : prev);
+  };
+
+  const isWalletRequired = () => {
+    return !user?.walletConnected && user?.authMethod !== 'wallet';
+  };
   const login = async (userData: User) => {
     try {
       // Optionally verify session with backend here or rely on checkAuthStatus on mount
@@ -101,7 +116,18 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   }, [user]);
 
   return (
-    <UserContext.Provider value={{ user, setUser, updateUserProfile, updateProfileImage, updateUserName, updateUserEmail, login, logout }}>
+    <UserContext.Provider value={{ 
+      user, 
+      setUser, 
+      updateUserProfile, 
+      updateProfileImage, 
+      updateUserName, 
+      updateUserEmail, 
+      login, 
+      logout,
+      connectWallet,
+      isWalletRequired
+    }}>
       {children}
     </UserContext.Provider>
   )
