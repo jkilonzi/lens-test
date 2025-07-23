@@ -1,0 +1,33 @@
+const express = require('express');
+const sequelize = require('./config/db');
+
+async function startServer() {
+  try {
+    // Test database connection first
+    await sequelize.authenticate();
+    console.log('Database connection established');
+
+    const app = express();
+    
+    // ... rest of your middleware setup ...
+
+    const PORT = process.env.PORT || 3009;
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+
+    // Handle shutdown gracefully
+    process.on('SIGTERM', () => {
+      server.close(() => {
+        console.log('Server closed');
+        process.exit(0);
+      });
+    });
+
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();

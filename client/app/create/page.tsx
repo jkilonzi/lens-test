@@ -187,7 +187,7 @@ export default function CreateEventPage() {
       // }
 
       // Redirect to discover page
-      router.push(`/discover`)
+      router.push(`/event-created`)
     } catch (error) {
       console.error('Error creating event:', error)
       alert('Failed to create event. Please try again.')
