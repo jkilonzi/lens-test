@@ -26,8 +26,8 @@ app.get('/csrf-token', csrfProtection, csrfTokenHandler);
 // Apply CSRF protection and authentication only to protected routes
 app.use('/account', csrfProtection, verifyToken, userRoutes);
 
-// Apply CSRF protection and authentication to event routes
-app.use('/events', csrfProtection, verifyToken, eventRoutes);
+// Event routes (some protected, some public)
+app.use('/events', eventRoutes);
 
 // Authentication routes (e.g., login, registration)
 app.use('/auth', authRoutes);

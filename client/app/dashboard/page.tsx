@@ -13,13 +13,14 @@ import Image from "next/image"
 import GuestList from "@/components/GuestList"
 import { useUser } from "../../context/UserContext"
 import { ProfileDropdown } from "../landing/ProfileDropDown"
+import { getUserEvents } from "@/lib/api"
 
 export default function DashboardPage() {
   type Event = {
     id: string
     attendees?: number
   }
-  const myEvents = useEventStore((state) => state.myEvents)
+  const [myEvents, setMyEvents] = useState<any[]>([])
   const [registeredEvents, setRegisteredEvents] = useState<Event[]>([])
   const [activeTab, setActiveTab] = useState("my-events")
   const [sidebarSection, setSidebarSection] = useState<string>("overview")
@@ -28,6 +29,8 @@ export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Handle responsive behavior
   useEffect(() => {
@@ -49,6 +52,30 @@ export default function DashboardPage() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
+  // Fetch user's events
+  useEffect(() => {
+    const fetchUserEvents = async () => {
+      if (!user) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        setLoading(true)
+        const response = await getUserEvents()
+        setMyEvents(response.events)
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching user events:', err)
+        setError('Failed to load your events')
+        setMyEvents([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserEvents()
+  }, [user])
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

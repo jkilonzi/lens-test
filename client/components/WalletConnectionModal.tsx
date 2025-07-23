@@ -12,6 +12,7 @@ import {
 import { ConnectModal, useCurrentAccount } from "@mysten/dapp-kit"
 import { useUser } from "@/context/UserContext"
 import { Wallet, Shield, Zap } from "lucide-react"
+import { updateUserWallet } from "@/lib/auth"
 
 interface WalletConnectionModalProps {
   isOpen: boolean
@@ -29,29 +30,55 @@ export default function WalletConnectionModal({
   description = "To create events and mint POAPs, you need to connect your wallet first."
 }: WalletConnectionModalProps) {
   const [connectModalOpen, setConnectModalOpen] = useState(false)
+  const [isConnecting, setIsConnecting] = useState(false)
   const { connectWallet, user } = useUser()
   const account = useCurrentAccount()
 
   // Handle wallet connection
-  const handleWalletConnect = () => {
+  const handleWalletConnect = async () => {
     if (account?.address) {
-      connectWallet(account.address)
-      onWalletConnected()
-      onClose()
+      setIsConnecting(true)
+      try {
+        // Update wallet address in backend
+        await updateUserWallet(account.address)
+        
+        // Update local user context
+        connectWallet(account.address)
+        
+        onWalletConnected()
+        onClose()
+      } catch (error) {
+        console.error('Error connecting wallet:', error)
+        alert('Failed to connect wallet. Please try again.')
+      } finally {
+        setIsConnecting(false)
+      }
     } else {
       setConnectModalOpen(true)
     }
   }
 
   // Monitor account changes
-  useState(() => {
+  useEffect(() => {
     if (account?.address && connectModalOpen) {
-      connectWallet(account.address)
-      setConnectModalOpen(false)
-      onWalletConnected()
-      onClose()
+      const updateWallet = async () => {
+        setIsConnecting(true)
+        try {
+          await updateUserWallet(account.address)
+          connectWallet(account.address)
+          setConnectModalOpen(false)
+          onWalletConnected()
+          onClose()
+        } catch (error) {
+          console.error('Error connecting wallet:', error)
+          alert('Failed to connect wallet. Please try again.')
+        } finally {
+          setIsConnecting(false)
+        }
+      }
+      updateWallet()
     }
-  }, [account?.address, connectModalOpen, connectWallet, onWalletConnected, onClose])
+  }, [account?.address, connectModalOpen])
 
   // Show different content based on auth method
   const getModalContent = () => {
@@ -120,15 +147,17 @@ export default function WalletConnectionModal({
               {modalContent.showConnectButton && (
                 <Button 
                   onClick={handleWalletConnect}
+                  disabled={isConnecting}
                   className="w-full bg-blue-500 hover:bg-blue-600"
                 >
-                  {account?.address ? 'Use Connected Wallet' : 'Connect Wallet'}
+                  {isConnecting ? 'Connecting...' : account?.address ? 'Use Connected Wallet' : 'Connect Wallet'}
                 </Button>
               )}
               
               <Button 
                 variant="outline" 
                 onClick={onClose}
+                disabled={isConnecting}
                 className="w-full"
               >
                 {user?.authMethod === 'wallet' ? 'Close' : 'Cancel'}

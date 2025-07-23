@@ -19,14 +19,18 @@ import EventDetails from '@/components/EventDetails';
 import { useEventContext } from '@/context/EventContext'
 import { useUser } from '@/context/UserContext'
 import Header from "../components/Header"
+import { getAllEvents } from '@/lib/api'
 
 const EventDashboard: React.FC = () => {
-  const { events, updateEvent } = useEventContext()
+  const { events: contextEvents, updateEvent } = useEventContext()
   const { user } = useUser()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState("all")
   const [selectedEvent, setSelectedEvent] = useState<any | null>(null)
+  const [apiEvents, setApiEvents] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   const categories = [
     { id: "all", label: "All Events" },
@@ -35,10 +39,43 @@ const EventDashboard: React.FC = () => {
     { id: "creators", label: "Content Creators" },
   ]
 
-  const filteredEvents = events
+  // Fetch events from API on component mount
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setLoading(true)
+        const response = await getAllEvents({
+          page: 1,
+          limit: 50,
+          category: selectedCategory === 'all' ? undefined : selectedCategory,
+          search: searchTerm || undefined,
+        })
+        setApiEvents(response.events)
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching events:', err)
+        setError('Failed to load events')
+        setApiEvents([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchEvents()
+  }, [selectedCategory, searchTerm])
+
+  // Combine API events with context events (for newly created events)
+  const allEvents = [...apiEvents, ...contextEvents]
+  
+  // Remove duplicates based on ID
+  const uniqueEvents = allEvents.filter((event, index, self) => 
+    index === self.findIndex(e => e.id === event.id)
+  )
+
+  const filteredEvents = uniqueEvents
     .filter(event =>
       (event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-       event.type.toLowerCase().includes(searchTerm.toLowerCase())) &&
+       (event.type || event.category || '').toLowerCase().includes(searchTerm.toLowerCase())) &&
       (selectedCategory === "all" || event.category === selectedCategory)
     )
 
@@ -48,14 +85,14 @@ const EventDashboard: React.FC = () => {
       return
     }
     try {
-      const event = events.find(e => e.id === eventId)
+      const event = uniqueEvents.find(e => e.id === eventId)
       if (event && user.walletAddress) {
         const rsvps = event.rsvps || []
         if (!rsvps.includes(user.walletAddress)) {
           updateEvent(eventId, { rsvps: [...rsvps, user.walletAddress] })
         }
       }
-      const selected = events.find(e => e.id === eventId)
+      const selected = uniqueEvents.find(e => e.id === eventId)
       setSelectedEvent(selected || null)
     } catch (error) {
       console.error("Error updating RSVP:", error)
@@ -110,12 +147,30 @@ const EventDashboard: React.FC = () => {
 
       {/* Event Grid */}
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+        {loading && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-gray-500">Loading events...</div>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-red-500">{error}</div>
+          </div>
+        )}
+
+        {!loading && !error && filteredEvents.length === 0 && (
+          <div className="flex justify-center items-center py-12">
+            <div className="text-gray-500">No events found</div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {filteredEvents.map((event) => (
             <div key={event.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
               <div className="h-48 relative overflow-hidden">
                 <img 
-                  src={event.image} 
+                  src={event.image || 'https://via.placeholder.com/400x200?text=Event'} 
                   alt={event.title} 
                   className="w-full h-full object-cover transition-transform hover:scale-105 duration-300" 
                 />
@@ -127,9 +182,11 @@ const EventDashboard: React.FC = () => {
               </div>
               <div className="p-4">
                 <div className="mb-2">
-                  <Badge variant="outline" className="text-xs font-medium text-blue-600 bg-blue-50 border-blue-200">
-                    {event.type}
-                  </Badge>
+                  {(event.type || event.category) && (
+                    <Badge variant="outline" className="text-xs font-medium text-blue-600 bg-blue-50 border-blue-200">
+                      {event.type || event.category}
+                    </Badge>
+                  )}
                 </div>
                 <h3 
                   className="text-lg font-bold line-clamp-1 cursor-pointer hover:underline"

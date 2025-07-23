@@ -185,3 +185,23 @@ export async function refreshToken(): Promise<{ token: string }> {
 
   return data;
 }
+
+// Update user's wallet address
+export async function updateUserWallet(walletAddress: string): Promise<{ user: any }> {
+  const response = await fetch(`${API_BASE_URL}/auth/update-wallet`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify({ walletAddress }),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to update wallet');
+  }
+
+  return data;
+}

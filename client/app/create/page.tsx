@@ -34,6 +34,7 @@ import { mintPOAP, suilensService } from "@/lib/sui-client"
 import Header from '@/app/components/Header'
 import WalletConnectionModal from "@/components/WalletConnectionModal"
 import { useCurrentAccount } from "@mysten/dapp-kit"
+import { createEvent } from "@/lib/api"
 
 export default function CreateEventPage() {
   const { user, canCreateEvents, needsWalletForEventCreation, connectWallet } = useUser()
@@ -159,56 +160,85 @@ export default function CreateEventPage() {
         return
       }
 
-      // Create event ID locally
-      const eventId = `event_${Date.now()}`
-
-      // Generate QR code for the event
-      const qrData = await generateQRCode(eventId)
-
-      // Add event to context
-      addEvent({
-        id: eventId,
-        type: "",
-        ...eventData,
+      // Prepare event data for API
+      const apiEventData = {
+        title: eventData.title,
+        description: eventData.description,
+        date: eventData.date,
+        time: eventData.time,
+        endDate: eventData.endDate || null,
+        endTime: eventData.endTime || null,
+        location: eventData.location,
+        category: eventData.category || null,
+        capacity: eventData.capacity ? parseInt(eventData.capacity) : null,
+        ticketPrice: eventData.isFree ? null : parseFloat(eventData.ticketPrice || '0'),
+        isFree: eventData.isFree,
         requiresApproval: eventData.requiresApproval,
-        poapEnabled: poapData.name ? true : false,
+        isPrivate: eventData.isPrivate,
+        timezone: eventData.timezone,
+        poapName: poapData.name || null,
+        poapDescription: poapData.description || null,
+        poapImage: poapData.image ? URL.createObjectURL(poapData.image) : null,
+        creatorWalletAddress: user?.walletAddress || account?.address || null,
+      }
+
+      // Create event via API
+      const response = await createEvent(apiEventData)
+      const createdEvent = response.event
+
+      // Generate QR code for the created event
+      const qrData = await generateQRCode(createdEvent.id)
+
+      // Update event with QR code data if needed
+      if (qrData.qrCodeImage) {
+        // You could update the event with QR code data here if needed
+        // await updateEvent(createdEvent.id, { qrCode: qrData.qrCodeImage, eventUrl: qrData.eventUrl })
+      }
+
+      // Add event to local context for immediate UI updates
+      addEvent({
+        id: createdEvent.id,
+        type: createdEvent.category || "",
+        title: createdEvent.title,
+        description: createdEvent.description || "",
+        date: createdEvent.date,
+        endDate: createdEvent.endDate,
+        time: createdEvent.time,
+        endTime: createdEvent.endTime,
+        location: createdEvent.location || "",
+        category: createdEvent.category,
+        capacity: createdEvent.capacity?.toString(),
+        ticketPrice: createdEvent.ticketPrice?.toString(),
+        isFree: createdEvent.isFree,
+        requiresApproval: createdEvent.requiresApproval,
+        isPrivate: createdEvent.isPrivate,
+        timezone: createdEvent.timezone,
+        poapEnabled: !!createdEvent.poapName,
         qrCode: qrData.qrCodeImage,
         eventUrl: qrData.eventUrl,
       })
 
-      // Call smart contract to create event
-      const tx = await suilensService.createEvent({
-        name: eventData.title,
-        description: eventData.description,
-        startTime: new Date(`${eventData.date} ${eventData.time}`).getTime(),
-        endTime: new Date(`${eventData.endDate || eventData.date} ${eventData.endTime || eventData.time}`).getTime(),
-        maxAttendees: parseInt(eventData.capacity) || 100,
-        poapTemplate: poapData.name || '',
-      })
-      console.log('Create event transaction:', tx)
-
-      // POAP minting is disabled here to move to event details page after check-in
-      // if (poapData.name) {
-      //   try {
-      //     const mintTx = await mintPOAP(
-      //       eventId,
-      //       poapData.name,
-      //       poapData.image ? URL.createObjectURL(poapData.image) : '',
-      //       poapData.description,
-      //       ''
-      //     )
-      //     console.log('POAP mint transaction:', mintTx)
-      //   } catch (mintError) {
-      //     console.error('Error minting POAP:', mintError)
-      //     alert('Failed to mint POAP. Please try again.')
-      //   }
-      // }
+      // Call smart contract to create event on Sui (optional)
+      try {
+        const tx = await suilensService.createEvent({
+          name: eventData.title,
+          description: eventData.description,
+          startTime: new Date(`${eventData.date} ${eventData.time}`).getTime(),
+          endTime: new Date(`${eventData.endDate || eventData.date} ${eventData.endTime || eventData.time}`).getTime(),
+          maxAttendees: parseInt(eventData.capacity) || 100,
+          poapTemplate: poapData.name || '',
+        })
+        console.log('Create event transaction:', tx)
+      } catch (suiError) {
+        console.error('Sui contract error (non-blocking):', suiError)
+        // Don't fail the entire flow if Sui contract fails
+      }
 
       // Redirect to discover page
       router.push(`/discover`)
     } catch (error) {
       console.error('Error creating event:', error)
-      alert('Failed to create event. Please try again.')
+      alert(`Failed to create event: ${error.message}`)
     } finally {
       setIsCreating(false)
     }
