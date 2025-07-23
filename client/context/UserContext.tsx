@@ -37,6 +37,8 @@ type UserContextType = {
   updateUserEmail: (email: string) => void
   connectWallet: (walletAddress: string) => void
   isWalletRequired: () => boolean
+  canCreateEvents: () => boolean
+  needsWalletForEventCreation: () => boolean
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
@@ -72,6 +74,25 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return !user?.walletConnected && user?.authMethod !== 'wallet';
   };
   const login = async (userData: User) => {
+  const canCreateEvents = () => {
+    if (!user) return false;
+    
+    // If user signed in with wallet, they can create events immediately
+    if (user.authMethod === 'wallet') return true;
+    
+    // For email/Google users, they need to have connected a wallet
+    return user.walletConnected === true && !!user.walletAddress;
+  };
+
+  const needsWalletForEventCreation = () => {
+    if (!user) return false;
+    
+    // If user signed in with wallet, no additional wallet connection needed
+    if (user.authMethod === 'wallet') return false;
+    
+    // For email/Google users, check if wallet is connected
+    return !user.walletConnected || !user.walletAddress;
+  };
     try {
       // Optionally verify session with backend here or rely on checkAuthStatus on mount
       setUser(userData);
@@ -132,7 +153,9 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     </UserContext.Provider>
   )
 }
-
+        isWalletRequired,
+        canCreateEvents,
+        needsWalletForEventCreation
 export const useUser = (): UserContextType => {
   const context = useContext(UserContext)
   if (context === undefined) {
