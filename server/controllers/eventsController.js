@@ -26,6 +26,7 @@ const eventValidationSchema = Joi.object({
   suiEventId: Joi.string().optional(),
   creatorWalletAddress: Joi.string().optional(),
 });
+
 // Controller to create a new event
 exports.createEvent = async (req, res, next) => {
   const userId = req.user.userId; // From JWT token
@@ -244,6 +245,7 @@ exports.deleteEvent = async (req, res, next) => {
     next(err);
   }
 };
+
 module.exports = {
   createEvent: exports.createEvent,
   getAllEvents: exports.getAllEvents,

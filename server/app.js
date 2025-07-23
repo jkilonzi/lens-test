@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const eventRoutes = require('./routes/eventRoutes');
+const eventRoutes = require('./routes/eventRoutes');
 const verifyToken = require('./middleware/authenticateToken');
 const { csrfProtection, csrfTokenHandler } = require('./middleware/csrfMiddleware');
 require('dotenv').config();
@@ -16,7 +17,7 @@ app.use(cookieParser());
 
 // Configure CORS to allow requests from the frontend with credentials
 app.use(cors({
-  origin: [process.env.NEXTAUTH_URL, 'https://accounts.google.com'],  // Allow frontend and Google
+  origin: [process.env.FRONTEND_URL || 'http://localhost:3000', 'https://accounts.google.com'],  // Allow frontend and Google
   credentials: true,   // Allow cookies to be sent in cross-origin requests
 }));
 

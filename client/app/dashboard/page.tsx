@@ -11,6 +11,7 @@ import { ConnectButton } from "@mysten/dapp-kit"
 import { useEventStore } from "@/store/EventStore"
 import Image from "next/image"
 import GuestList from "@/components/GuestList"
+import { getUserEvents } from "@/lib/api"
 import { useUser } from "../../context/UserContext"
 import { ProfileDropdown } from "../landing/ProfileDropDown"
 import { getUserEvents } from "@/lib/api"
@@ -29,6 +30,8 @@ export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -51,6 +54,31 @@ export default function DashboardPage() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Fetch user's events
+  useEffect(() => {
+    const fetchUserEvents = async () => {
+      if (!user) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        setLoading(true)
+        const response = await getUserEvents()
+        setMyEvents(response.events)
+        setError(null)
+      } catch (err) {
+        console.error('Error fetching user events:', err)
+        setError('Failed to load your events')
+        setMyEvents([])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserEvents()
+  }, [user])
 
   // Fetch user's events
   useEffect(() => {

@@ -159,6 +159,43 @@ router.post('/update-wallet', verifyToken, async (req, res, next) => {
     }
 
     // Update user's wallet address
+    const { User } = require('../models/userSchema');
+    const user = await User.findByPk(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    await user.update({ walletAddress });
+
+    return res.status(200).json({
+      message: 'Wallet updated successfully',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        username: user.username,
+        avatarUrl: user.avatarUrl,
+        walletAddress: user.walletAddress,
+        bio: user.bio,
+        location: user.location,
+      }
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Route for updating user's wallet address
+router.post('/update-wallet', verifyToken, async (req, res, next) => {
+  try {
+    const { walletAddress } = req.body;
+    const userId = req.user.userId;
+
+    if (!walletAddress) {
+      return res.status(400).json({ error: 'Wallet address is required' });
+    }
+
+    // Update user's wallet address
     const user = await User.findByPk(userId);
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
