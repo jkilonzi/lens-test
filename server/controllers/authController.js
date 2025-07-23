@@ -342,3 +342,4 @@ exports.logout = (req, res) => {
   res.clearCookie('token');
   res.clearCookie('refreshToken');
   return res.status(200).json({ message: 'Logged out successfully' });
+}
