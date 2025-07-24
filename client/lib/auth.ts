@@ -2,25 +2,16 @@
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3009';
 
-interface AuthResponse {
-  message: string;
-  userId: number;
-  role: string;
-  user?: {
-    id: number;
-    email: string;
-    name: string;
-    username: string;
-    avatarUrl: string;
-    walletAddress?: string;
-    bio?: string;
-    location?: string;
-  };
-}
-
-interface AuthError {
-  error: string;
-  errors?: Array<{ message: string; path: string[] }>;
+async function getCsrfToken() {
+  const response = await fetch(`${API_BASE_URL}/csrf-token`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+  if (!response.ok) {
+    throw new Error('Failed to fetch CSRF token');
+  }
+  const data = await response.json();
+  return data.csrfToken;
 }
 
 // Google Authentication
@@ -32,11 +23,13 @@ export async function authenticateWithGoogle(
     bio?: string;
     location?: string;
   }
-): Promise<AuthResponse> {
+): Promise<Response> {
+  const csrfToken = await getCsrfToken();
   const response = await fetch(`${API_BASE_URL}/auth/google`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'CSRF-Token': csrfToken,
     },
     credentials: 'include',
     body: JSON.stringify({
@@ -63,11 +56,13 @@ export async function authenticateWithWallet(
     bio?: string;
     location?: string;
   }
-): Promise<AuthResponse> {
+): Promise<Response> {
+  const csrfToken = await getCsrfToken();
   const response = await fetch(`${API_BASE_URL}/auth/wallet`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'CSRF-Token': csrfToken,
     },
     credentials: 'include',
     body: JSON.stringify({
@@ -87,10 +82,12 @@ export async function authenticateWithWallet(
 
 // Send OTP
 export async function sendOTP(email: string): Promise<{ message: string; email: string }> {
+  const csrfToken = await getCsrfToken();
   const response = await fetch(`${API_BASE_URL}/auth/otp/send`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'CSRF-Token': csrfToken,
     },
     credentials: 'include',
     body: JSON.stringify({ email }),
@@ -115,11 +112,13 @@ export async function verifyOTP(
     bio?: string;
     location?: string;
   }
-): Promise<AuthResponse> {
+): Promise<Response> {
+  const csrfToken = await getCsrfToken();
   const response = await fetch(`${API_BASE_URL}/auth/otp/verify`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
+      'CSRF-Token': csrfToken,
     },
     credentials: 'include',
     body: JSON.stringify({
@@ -139,7 +138,7 @@ export async function verifyOTP(
 }
 
 // Check Authentication Status
-export async function checkAuthStatus(): Promise<AuthResponse> {
+export async function checkAuthStatus(): Promise<Response> {
   const response = await fetch(`${API_BASE_URL}/auth/check-auth`, {
     method: 'GET',
     credentials: 'include',
@@ -156,8 +155,12 @@ export async function checkAuthStatus(): Promise<AuthResponse> {
 
 // Logout
 export async function logout(): Promise<{ message: string }> {
+  const csrfToken = await getCsrfToken();
   const response = await fetch(`${API_BASE_URL}/auth/logout`, {
     method: 'POST',
+    headers: {
+      'CSRF-Token': csrfToken,
+    },
     credentials: 'include',
   });
 
@@ -172,8 +175,12 @@ export async function logout(): Promise<{ message: string }> {
 
 // Refresh Token
 export async function refreshToken(): Promise<{ token: string }> {
+  const csrfToken = await getCsrfToken();
   const response = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
     method: 'POST',
+    headers: {
+      'CSRF-Token': csrfToken,
+    },
     credentials: 'include',
   });
 

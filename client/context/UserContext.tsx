@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from "react"
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react"
 import { checkAuthStatus } from "@/lib/auth"
 
 type User = {
@@ -16,7 +16,7 @@ type User = {
   mobile?: string
   username?: string
   walletAddress?: string
-  emails: { address: string; primary: boolean; verified: boolean }[]
+  emails?: { address: string; primary: boolean; verified: boolean }[]
   eventsAttended?: number
   poapsCollected?: number
   avatarUrl?: string
@@ -44,15 +44,15 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setUser(prev => prev ? { ...prev, ...updates } : prev);
   };
 
-  const updateProfileImage = (imageUrl: any) => {
+  const updateProfileImage = (imageUrl: string) => {
     setUser(prev => prev ? { ...prev, avatarUrl: imageUrl } : prev);
   };
 
-  const updateUserName = (name: any) => {
+  const updateUserName = (name: string) => {
     setUser(prev => prev ? { ...prev, name } : prev);
   };
 
-  const updateUserEmail = (email: any) => {
+  const updateUserEmail = (email: string) => {
     setUser(prev => prev ? ({ ...prev, email }): prev);
   };
 
@@ -89,7 +89,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     };
 
     verifyUser();
-  }, []);
+  }, [user]);
 
   // Persist user state to localStorage
   useEffect(() => {
@@ -100,8 +100,20 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     }
   }, [user]);
 
+  const contextValue = useCallback(() => ({
+    user,
+    setUser,
+    updateUserProfile,
+    updateProfileImage,
+    updateUserName,
+    updateUserEmail,
+    login,
+    logout,
+  }), [user]);
+
+
   return (
-    <UserContext.Provider value={{ user, setUser, updateUserProfile, updateProfileImage, updateUserName, updateUserEmail, login, logout }}>
+    <UserContext.Provider value={contextValue()}>
       {children}
     </UserContext.Provider>
   )

@@ -1,5 +1,7 @@
 "use client"
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3009';
+
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -89,45 +91,45 @@ export default function CreateEventPage() {
   })
 
   // Generate QR code using Qrfy API
-  const generateQRCode = async (eventId: string) => {
-    try {
-      const eventUrl = `${window.location.origin}/event/${eventId}/register`
-      const response = await fetch('https://qrfy.com/api/v1/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Add API key if required: 'Authorization': 'Bearer YOUR_API_KEY',
-        },
-        body: JSON.stringify({
-          qr_data: eventUrl,
-          image_format: 'PNG',
-          image_width: 300,
-          qr_code_logo: 'none',
-          foreground_color: '#000000',
-          background_color: '#FFFFFF',
-        }),
-      })
+  // const generateQRCode = async (eventId: string) => {
+  //   try {
+  //     const eventUrl = `${window.location.origin}/event/${eventId}/register`
+  //     const response = await fetch('https://qrfy.com/api/public/qrs/{.png}', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         // Add API key if required: 'Authorization': 'Bearer YOUR_API_KEY',
+  //       },
+  //       body: JSON.stringify({
+  //         qr_data: eventUrl,
+  //         image_format: 'PNG',
+  //         image_width: 300,
+  //         qr_code_logo: 'none',
+  //         foreground_color: '#000000',
+  //         background_color: '#FFFFFF',
+  //       }),
+  //     })
 
-      if (!response.ok) {
-        throw new Error('Failed to generate QR code')
-      }
+  //     if (!response.ok) {
+  //       throw new Error('Failed to generate QR code')
+  //     }
 
-      const result = await response.json()
-      return {
-        qrCodeUrl: result.qr_code_url,
-        eventUrl: eventUrl,
-        qrCodeImage: result.image_url,
-      }
-    } catch (error) {
-      console.error('Error generating QR code:', error)
-      const eventUrl = `${window.location.origin}/event/${eventId}/register`
-      return {
-        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(eventUrl)}`,
-        eventUrl: eventUrl,
-        qrCodeImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(eventUrl)}`,
-      }
-    }
-  }
+  //     const result = await response.json()
+  //     return {
+  //       qrCodeUrl: result.qr_code_url,
+  //       eventUrl: eventUrl,
+  //       qrCodeImage: result.image_url,
+  //     }
+  //   } catch (error) {
+  //     console.error('Error generating QR code:', error)
+  //     const eventUrl = `${window.location.origin}/event/${eventId}/register`
+  //     return {
+  //       qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(eventUrl)}`,
+  //       eventUrl: eventUrl,
+  //       qrCodeImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(eventUrl)}`,
+  //     }
+  //   }
+  // }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -145,18 +147,50 @@ export default function CreateEventPage() {
       const eventId = `event_${Date.now()}`
 
       // Generate QR code for the event
-      const qrData = await generateQRCode(eventId)
+      //const qrData = await generateQRCode(eventId)
+
+      // Call backend API to create event
+      const csrfResponse = await fetch(`${API_BASE_URL}/csrf-token`, {
+        method: 'GET',
+        credentials: 'include',
+      });
+      const csrfData = await csrfResponse.json();
+      const csrfToken = csrfData.csrfToken;
+
+      const response = await fetch(`${API_BASE_URL}/events/create`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'CSRF-Token': csrfToken,
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          title: eventData.title,
+          description: eventData.description,
+          date: eventData.date,
+          location: eventData.location,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        alert(`Failed to create event: ${errorData.error || 'Unknown error'}`)
+        setIsCreating(false)
+        return
+      }
+
+      const createdEvent = await response.json()
 
       // Add event to context
-      addEvent({
-        id: eventId,
-        type: "",
-        ...eventData,
-        requiresApproval: eventData.requiresApproval,
-        poapEnabled: poapData.name ? true : false,
-        qrCode: qrData.qrCodeImage,
-        eventUrl: qrData.eventUrl,
-      })
+      // addEvent({
+      //   id: eventId,
+      //   type: "",
+      //   ...eventData,
+      //   requiresApproval: eventData.requiresApproval,
+      //   poapEnabled: poapData.name ? true : false,
+      //   qrCode: qrData.qrCodeImage,
+      //   eventUrl: qrData.eventUrl,
+      // })
 
       // Call smart contract to create event
       const tx = await suilensService.createEvent({
@@ -187,7 +221,7 @@ export default function CreateEventPage() {
       // }
 
       // Redirect to discover page
-      router.push(`/discover`)
+      router.push(`/event-created`)
     } catch (error) {
       console.error('Error creating event:', error)
       alert('Failed to create event. Please try again.')

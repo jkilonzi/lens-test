@@ -139,7 +139,7 @@ export default function SignUpPage() {
           walletAddress: authResult.user.walletAddress || '',
           username: authResult.user.username || '',
           bio: authResult.user.bio || '',
-          location: authResult.user.location || '',
+          // location: authResult.user.location || '',
         });
         router.push('/landing');
       }
@@ -240,7 +240,7 @@ export default function SignUpPage() {
               walletAddress: authResult.user.walletAddress || account.address,
               username: authResult.user.username || '',
               bio: authResult.user.bio || '',
-              location: authResult.user.location || '',
+              // location: authResult.user.location || '',
             })
             router.push('/landing')
           }
@@ -294,7 +294,7 @@ export default function SignUpPage() {
           walletAddress: authResult.user.walletAddress || '',
           username: authResult.user.username || '',
           bio: authResult.user.bio || '',
-          location: authResult.user.location || '',
+          // location: authResult.user.location || '',
         })
         router.push('/landing')
       }

@@ -19,7 +19,7 @@ const createTransporter = async () => {
   try {
     const accessToken = await oauth2Client.getAccessToken();
 
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       service: 'gmail',
       auth: {
         type: 'OAuth2',
@@ -33,7 +33,7 @@ const createTransporter = async () => {
   } catch (error) {
     console.error('Error creating email transporter:', error);
     // Fallback to basic SMTP if OAuth fails
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp.gmail.com',
       port: process.env.SMTP_PORT || 587,
       secure: false,
@@ -106,4 +106,41 @@ const sendRecoveryEmail = async (email, token) => {
   }
 };
 
-module.exports = { sendOTPEmail, sendRecoveryEmail };
+// Function to send event registration email with QR code
+const sendEmailWithQRCode = async (email, name, qrCodeDataUrl, checkInUrl) => {
+  const transporter = await createTransporter();
+
+  const mailOptions = {
+    from: `"Suilens" <${process.env.EMAIL_USERNAME}>`,
+    to: email,
+    subject: 'Your Event Ticket and QR Code',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="color: #4DA2FF; margin: 0;">Suilens</h1>
+        </div>
+        <div style="background-color: #f8f9fa; padding: 30px; border-radius: 10px; text-align: center;">
+          <h2 style="color: #333; margin-bottom: 20px;">Hello ${name},</h2>
+          <p>Thank you for registering for the event. Please find your unique QR code ticket below:</p>
+          <img src="${qrCodeDataUrl}" alt="Event QR Code" style="margin: 20px 0; max-width: 300px;" />
+          <p>You can also use this link to check in: <a href="${checkInUrl}">${checkInUrl}</a></p>
+          <p>Please present this QR code at the event for check-in.</p>
+        </div>
+        <div style="text-align: center; margin-top: 30px; color: #999; font-size: 12px;">
+          <p>© 2025 Suilens. All rights reserved.</p>
+        </div>
+      </div>
+    `,
+    text: `Hello ${name},\n\nThank you for registering for the event. Your check-in link: ${checkInUrl}`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Event registration email with QR code sent to ${email}`);
+  } catch (error) {
+    console.error(`Failed to send event registration email to ${email}:`, error);
+    throw new Error('Error sending event registration email');
+  }
+};
+
+module.exports = { sendOTPEmail, sendRecoveryEmail, sendEmailWithQRCode };
