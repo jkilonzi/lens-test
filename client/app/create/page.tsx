@@ -1,14 +1,11 @@
-"use client"
+"use client";
 
-import type React from "react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
-import { useUser } from "../../context/UserContext"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent } from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
+import type React from "react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import {
   Dialog,
   DialogContent,
@@ -16,243 +13,229 @@ import {
   DialogTitle,
   DialogTrigger,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
-import Image from "next/image"
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import Image from "next/image";
 import {
-  ArrowLeft,
   Edit3,
   Camera,
   Plus,
   Loader2,
-  Menu,
-  X,
-} from "lucide-react"
-import Link from "next/link"
-import { useEventContext } from "@/context/EventContext"
-import { mintPOAP, suilensService } from "@/lib/sui-client"
-import Header from '@/app/components/Header'
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEventContext } from "@/context/EventContext";
+import { useCurrentAccount } from "@mysten/dapp-kit";
+
+// Import Event type from EventContext to ensure consistency
+import { Event } from "@/context/EventContext";
 
 export default function CreateEventPage() {
-  const { user } = useUser()
-  const router = useRouter()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const { addEvent } = useEventContext()
-
-  // Redirect to signin if not logged in
-  useEffect(() => {
-    if (!user) {
-      const timeoutId = setTimeout(() => {
-        router.push('/auth/signin')
-      }, 100)
-      return () => clearTimeout(timeoutId)
-    }
-  }, [user, router])
-
   const [eventData, setEventData] = useState({
     title: "",
     description: "",
     date: "",
-    endDate: "",
     time: "",
-    endTime: "",
+    endTime: "", // Using camelCase to match Event type
     location: "",
     category: "",
     capacity: "",
-    ticketPrice: "",
-    isFree: true,
-    requiresApproval: false,
-    isPrivate: false,
+    ticketPrice: "", // Using camelCase
+    isFree: true, // Using camelCase
+    requiresApproval: false, // Using camelCase
+    isPrivate: false, // Using camelCase
     timezone: "GMT+03:00 Nairobi",
-  })
+  });
 
-  const [isCreating, setIsCreating] = useState(false)
-  const [ticketDialogOpen, setTicketDialogOpen] = useState(false)
-  const [capacityDialogOpen, setCapacityDialogOpen] = useState(false)
-  const [poapDialogOpen, setPoapDialogOpen] = useState(false)
-  const [tempTicketData, setTempTicketData] = useState({
-    isFree: eventData.isFree,
-    ticketPrice: eventData.ticketPrice,
-  })
-  const [tempCapacityData, setTempCapacityData] = useState({
-    capacity: eventData.capacity,
-  })
-
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const [imagePreview, setImagePreview] = useState<string | null>(null)
-
-  // POAP data state
   const [poapData, setPoapData] = useState({
     name: "",
     description: "",
     image: null as File | null,
-  })
+    imagePreview: "", // Using camelCase
+  });
 
-  // Generate QR code using Qrfy API
-  const generateQRCode = async (eventId: string) => {
-    try {
-      const eventUrl = `${window.location.origin}/event/${eventId}/register`
-      const response = await fetch('https://qrfy.com/api/v1/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Add API key if required: 'Authorization': 'Bearer YOUR_API_KEY',
-        },
-        body: JSON.stringify({
-          qr_data: eventUrl,
-          image_format: 'PNG',
-          image_width: 300,
-          qr_code_logo: 'none',
-          foreground_color: '#000000',
-          background_color: '#FFFFFF',
-        }),
-      })
+  const router = useRouter();
+  const [isCreating, setIsCreating] = useState(false);
+  const [ticketDialogOpen, setTicketDialogOpen] = useState(false);
+  const [capacityDialogOpen, setCapacityDialogOpen] = useState(false);
+  const [poapDialogOpen, setPoapDialogOpen] = useState(false);
+  const [tempTicketData, setTempTicketData] = useState({
+    isFree: eventData.isFree,
+    ticketPrice: eventData.ticketPrice,
+  });
+  const [tempCapacityData, setTempCapacityData] = useState({
+    capacity: eventData.capacity,
+  });
+  const { addEvent } = useEventContext();
 
-      if (!response.ok) {
-        throw new Error('Failed to generate QR code')
-      }
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-      const result = await response.json()
-      return {
-        qrCodeUrl: result.qr_code_url,
-        eventUrl: eventUrl,
-        qrCodeImage: result.image_url,
-      }
-    } catch (error) {
-      console.error('Error generating QR code:', error)
-      const eventUrl = `${window.location.origin}/event/${eventId}/register`
-      return {
-        qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(eventUrl)}`,
-        eventUrl: eventUrl,
-        qrCodeImage: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(eventUrl)}`,
-      }
-    }
-  }
+  const account = useCurrentAccount();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setIsCreating(true)
+    e.preventDefault();
+    setIsCreating(true);
+
+    if (!account?.address) {
+      alert("Connect your wallet to create an event.");
+      setIsCreating(false);
+      return;
+    }
+
+    // Prepare event data to match Event type
+    let poapImageUrl = "";
+    if (poapData.image) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        poapImageUrl = reader.result as string; // Base64 for now, replace with actual URL
+      };
+      reader.readAsDataURL(poapData.image);
+    }
+
+    const eventToSave: Partial<Event> = {
+      title: eventData.title,
+      description: eventData.description,
+      date: eventData.date,
+      time: eventData.time,
+      endTime: eventData.endTime,
+      location: eventData.location,
+      category: eventData.category,
+      capacity: eventData.capacity || null,
+      ticketPrice: eventData.isFree ? "0" : eventData.ticketPrice,
+      isFree: eventData.isFree,
+      requiresApproval: eventData.requiresApproval,
+      isPrivate: eventData.isPrivate,
+      timezone: eventData.timezone,
+      creator: account.address,
+      poapName: poapData.name || null,
+      poapDescription: poapData.description || null,
+      poapImage: poapImageUrl || null,
+      type: eventData.category || "general", // Default to "general" or use category as type
+    };
 
     try {
-      // Validate required fields
-      if (!eventData.title || !eventData.description || !eventData.date || !eventData.time || !eventData.location) {
-        alert('Please fill in all required fields')
-        setIsCreating(false)
-        return
+      const response = await fetch("http://localhost:3009/api/events", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(eventToSave),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create event");
       }
 
-      // Create event ID locally
-      const eventId = `event_${Date.now()}`
+      const data = await response.json();
+      const eventId = data.id; // Assuming the server returns { id, ... }
 
-      // Generate QR code for the event
-      const qrData = await generateQRCode(eventId)
-
-      // Add event to context
+      // Add event to context with the server-provided id
       addEvent({
-        id: eventId,
-        type: "",
-        ...eventData,
-        requiresApproval: eventData.requiresApproval,
-        poapEnabled: poapData.name ? true : false,
-        qrCode: qrData.qrCodeImage,
-        eventUrl: qrData.eventUrl,
-      })
+        ...eventToSave,
+        id: eventId, // Ensure id is a string from server response
+      } as Event);
 
-      // Call smart contract to create event
-      const tx = await suilensService.createEvent({
-        name: eventData.title,
-        description: eventData.description,
-        startTime: new Date(`${eventData.date} ${eventData.time}`).getTime(),
-        endTime: new Date(`${eventData.endDate || eventData.date} ${eventData.endTime || eventData.time}`).getTime(),
-        maxAttendees: parseInt(eventData.capacity) || 100,
-        poapTemplate: poapData.name || '',
-      })
-      console.log('Create event transaction:', tx)
-
-      // POAP minting is disabled here to move to event details page after check-in
-      // if (poapData.name) {
-      //   try {
-      //     const mintTx = await mintPOAP(
-      //       eventId,
-      //       poapData.name,
-      //       poapData.image ? URL.createObjectURL(poapData.image) : '',
-      //       poapData.description,
-      //       ''
-      //     )
-      //     console.log('POAP mint transaction:', mintTx)
-      //   } catch (mintError) {
-      //     console.error('Error minting POAP:', mintError)
-      //     alert('Failed to mint POAP. Please try again.')
-      //   }
-      // }
-
-      // Redirect to discover page
-      router.push(`/event-created`)
+      router.push(`/event-created/${eventId}`);
     } catch (error) {
-      console.error('Error creating event:', error)
-      alert('Failed to create event. Please try again.')
+      console.error("Error creating event:", error);
     } finally {
-      setIsCreating(false)
+      setIsCreating(false);
     }
-  }
+  };
 
   const handleTicketSave = () => {
     setEventData({
       ...eventData,
       isFree: tempTicketData.isFree,
       ticketPrice: tempTicketData.ticketPrice,
-    })
-    setTicketDialogOpen(false)
-  }
+    });
+    setTicketDialogOpen(false);
+  };
 
   const handleCapacitySave = () => {
     setEventData({
       ...eventData,
       capacity: tempCapacityData.capacity,
-    })
-    setCapacityDialogOpen(false)
-  }
+    });
+    setCapacityDialogOpen(false);
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setImageFile(file)
-      const reader = new FileReader()
+      setImageFile(file);
+      const reader = new FileReader();
       reader.onload = (e) => {
-        setImagePreview(e.target?.result as string)
-      }
-      reader.readAsDataURL(file)
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handlePoapImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+    const file = e.target.files?.[0];
     if (file) {
-      setPoapData({ ...poapData, image: file })
+      setPoapData((prev) => ({ ...prev, image: file }));
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPoapData((prev) => ({ ...prev, imagePreview: e.target?.result as string }));
+      };
+      reader.readAsDataURL(file);
     }
-  }
-
-  const handlePoapSave = () => {
-    setPoapDialogOpen(false)
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <Header />
-      {/* Form Section with Back Button */}
-      <div className="max-w-md mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        <div className="mb-6">
-          <Link href="/landing" className="inline-flex items-center text-gray-600 hover:text-gray-900">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
+      <header className="bg-white/95 backdrop-blur-sm border-b sticky top-0 z-50">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <Link href="/landing" className="flex items-center space-x-3 ">
+            <div className="w-10 h-10 rounded-lg flex items-center justify-center">
+              <Image
+                src="https://i.ibb.co/PZHSkCVG/Suilens-Logo-Mark-Suilens-Black.png"
+                alt="Suilens Logo"
+                width={60}
+                height={60}
+                className="object-contain"
+              />
+            </div>
+            <span className="text-2xl font-bold text-[#020B15]">Suilens</span>
           </Link>
-        </div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6">Create Event</h1>
 
+          <nav className="hidden lg:flex text-sm font-inter items-center space-x-8">
+            <Link href="/landing" className="text-gray-800 font-semibold ">Home</Link>
+            {["Communities", "Discover", "Dashboard", "Bounties"].map((item) => (
+              <Link
+                key={item}
+                href={`/${item.toLowerCase().replace(" ", "-")}`}
+                className="text-gray-600 font-medium transition-colors"
+              >
+                {item}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="flex text-sm items-center space-x-4">
+            <Link href="/auth/signin">
+              <Button className="bg-[#4DA2FF] hover:bg-blue-500 transition-colors text-white px-6 rounded-xl">
+                Sign In
+              </Button>
+            </Link>
+
+            <Link href="/create">
+              <Button className="bg-[#4DA2FF] hover:bg-blue-500 transition-colors text-white px-6 rounded-xl">
+                Create Event
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <div className="max-w-md mx-auto px-6 py-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Image Upload Section */}
-          <div className="bg-gray-900 rounded-lg h-32 sm:h-40 flex items-center justify-center relative overflow-hidden">
+          <div className="bg-gray-900 rounded-lg h-32 flex items-center justify-center relative overflow-hidden">
             {imagePreview ? (
               <img
                 src={imagePreview}
@@ -262,7 +245,7 @@ export default function CreateEventPage() {
             ) : (
               <div className="text-center">
                 <Camera className="w-6 h-6 text-white mx-auto mb-2" />
-                <span className="text-white text-xs sm:text-sm">Add Event Image</span>
+                <span className="text-white text-sm">Add Event Image</span>
               </div>
             )}
             <input
@@ -275,9 +258,9 @@ export default function CreateEventPage() {
               <Button
                 type="button"
                 size="sm"
-                className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-2 sm:px-3 py-1 h-auto"
+                className="bg-blue-500 hover:bg-blue-600 text-white text-xs px-3 py-1 h-auto"
               >
-                Upload Image
+                Upload Event Image
               </Button>
             </div>
           </div>
@@ -285,7 +268,7 @@ export default function CreateEventPage() {
           {/* Event Name */}
           <div>
             <Label htmlFor="eventName" className="text-sm font-medium text-gray-700 mb-2 block">
-              Event Name *
+              Event Name
             </Label>
             <Input
               id="eventName"
@@ -299,7 +282,7 @@ export default function CreateEventPage() {
 
           {/* Start Date & Time */}
           <div>
-            <Label className="text-sm font-medium text-gray-700 mb-2 block">Start *</Label>
+            <Label className="text-sm font-medium text-gray-700 mb-2 block">Start</Label>
             <div className="grid grid-cols-2 gap-3">
               <Input
                 type="date"
@@ -324,8 +307,8 @@ export default function CreateEventPage() {
             <div className="grid grid-cols-2 gap-3">
               <Input
                 type="date"
-                value={eventData.endDate}
-                onChange={(e) => setEventData({ ...eventData, endDate: e.target.value })}
+                value={eventData.date}
+                onChange={(e) => setEventData({ ...eventData, date: e.target.value })}
                 className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
               />
               <Input
@@ -340,7 +323,7 @@ export default function CreateEventPage() {
           {/* Event Location */}
           <div>
             <Label htmlFor="location" className="text-sm font-medium text-gray-700 mb-2 block">
-              Event Location *
+              Event Location
             </Label>
             <Input
               id="location"
@@ -355,7 +338,7 @@ export default function CreateEventPage() {
           {/* Add Description */}
           <div>
             <Label htmlFor="description" className="text-sm font-medium text-gray-700 mb-2 block">
-              Add Description *
+              Add Description
             </Label>
             <Textarea
               id="description"
@@ -381,14 +364,14 @@ export default function CreateEventPage() {
                     setTempTicketData({
                       isFree: eventData.isFree,
                       ticketPrice: eventData.ticketPrice,
-                    })
+                    });
                   }}
                 >
                   <span>{eventData.isFree ? "Free" : `$${eventData.ticketPrice || "0"}`}</span>
                   <Edit3 className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="w-[95%] max-w-md mx-auto bg-white">
+              <DialogContent className="sm:max-w-[425px] bg-white">
                 <DialogHeader>
                   <DialogTitle>Edit Tickets</DialogTitle>
                 </DialogHeader>
@@ -458,14 +441,14 @@ export default function CreateEventPage() {
                   onClick={() => {
                     setTempCapacityData({
                       capacity: eventData.capacity,
-                    })
+                    });
                   }}
                 >
                   <span>{eventData.capacity || "Unlimited"}</span>
                   <Edit3 className="w-4 h-4" />
                 </Button>
               </DialogTrigger>
-              <DialogContent className="w-[95%] max-w-md mx-auto bg-white">
+              <DialogContent className="sm:max-w-[425px] bg-white">
                 <DialogHeader>
                   <DialogTitle>Edit Capacity</DialogTitle>
                 </DialogHeader>
@@ -513,12 +496,13 @@ export default function CreateEventPage() {
                   type="button"
                   variant="outline"
                   className="w-full justify-center border-dashed border-2 border-gray-300 hover:border-gray-400 py-6"
+                  onClick={() => setPoapDialogOpen(true)}
                 >
                   <Plus className="w-5 h-5 mr-2" />
                   Add POAP
                 </Button>
               </DialogTrigger>
-              <DialogContent className="w-[95%] max-w-md mx-auto bg-white">
+              <DialogContent className="sm:max-w-[425px] bg-white">
                 <DialogHeader>
                   <DialogTitle>Add POAP to Event</DialogTitle>
                 </DialogHeader>
@@ -532,9 +516,9 @@ export default function CreateEventPage() {
                       <Input
                         id="poap-name"
                         placeholder="Enter POAP name"
-                        value={poapData.name}
-                        onChange={(e) => setPoapData({ ...poapData, name: e.target.value })}
                         className="mt-1"
+                        value={poapData.name}
+                        onChange={(e) => setPoapData((prev) => ({ ...prev, name: e.target.value }))}
                       />
                     </div>
                     <div>
@@ -543,9 +527,9 @@ export default function CreateEventPage() {
                         id="poap-description"
                         placeholder="Describe your POAP"
                         rows={3}
-                        value={poapData.description}
-                        onChange={(e) => setPoapData({ ...poapData, description: e.target.value })}
                         className="mt-1"
+                        value={poapData.description}
+                        onChange={(e) => setPoapData((prev) => ({ ...prev, description: e.target.value }))}
                       />
                     </div>
                     <div>
@@ -554,25 +538,31 @@ export default function CreateEventPage() {
                         id="poap-image"
                         type="file"
                         accept="image/*"
-                        onChange={handlePoapImageUpload}
                         className="mt-1"
+                        onChange={handlePoapImageUpload}
                       />
+                      {poapData.imagePreview && (
+                        <img
+                          src={poapData.imagePreview}
+                          alt="POAP preview"
+                          className="mt-2 w-24 h-24 object-cover rounded"
+                        />
+                      )}
                     </div>
                   </div>
                 </div>
-                <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-                  <Button 
-                    type="button" 
-                    variant="outline" 
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
                     onClick={() => setPoapDialogOpen(false)}
-                    className="w-full sm:w-auto"
                   >
                     Cancel
                   </Button>
-                  <Button 
-                    type="button" 
-                    className="bg-blue-500 hover:bg-blue-600 w-full sm:w-auto"
-                    onClick={handlePoapSave}
+                  <Button
+                    type="button"
+                    className="bg-blue-500 hover:bg-blue-600"
+                    onClick={() => setPoapDialogOpen(false)}
                   >
                     Add POAP
                   </Button>
@@ -593,11 +583,11 @@ export default function CreateEventPage() {
                 Creating Event...
               </>
             ) : (
-              'Create Event'
+              "Create Event"
             )}
           </Button>
         </form>
       </div>
     </div>
-  )
+  );
 }
