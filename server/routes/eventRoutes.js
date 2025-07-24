@@ -57,4 +57,16 @@ router.post('/register', verifyToken, async (req, res, next) => {
   }
 });
 
+
+// Existing routes...
+
+// GET /user-events - Get events created by authenticated user
+router.get('/user-events', verifyToken, async (req, res, next) => {
+  try {
+    await eventsController.getUserEvents(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

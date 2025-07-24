@@ -330,19 +330,21 @@ export default function SignInPage() {
 		return () => window.removeEventListener('resize', handleResize);
 	}, []);
 
-	useEffect(() => {
-		console.log("useEffect triggered. Account:", account, "User:", user);
-		if (account && !user) {
-			login({
-				name: 'Sui User',
-				email: '',
-				emails: [{ address: '', primary: true, verified: false }],
-				avatarUrl: '/placeholder-user.jpg',
-				walletAddress: account.address,
-			});
-			router.push('/landing');
-		}
-	}, [account, login, user, router]);
+		useEffect(() => {
+			console.log("useEffect triggered. Account:", account, "User:", user);
+			let loginAttempted = false;
+			if (account && !user && !loginAttempted) {
+				loginAttempted = true;
+				login({
+					name: 'Sui User',
+					email: '',
+					emails: [{ address: '', primary: true, verified: false }],
+					avatarUrl: '/placeholder-user.jpg',
+					walletAddress: account.address,
+				});
+				router.push('/landing');
+			}
+		}, [account, login, user, router]);
 
 	return (
 		<div className="min-h-screen font-inter bg-white">

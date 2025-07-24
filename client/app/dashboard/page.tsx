@@ -13,6 +13,7 @@ import Image from "next/image"
 import GuestList from "@/components/GuestList"
 import { useUser } from "../../context/UserContext"
 import { ProfileDropdown } from "../landing/ProfileDropDown"
+import { getUserEvents } from "@/lib/api"
 
 export default function DashboardPage() {
   type Event = {
@@ -20,6 +21,7 @@ export default function DashboardPage() {
     attendees?: number
   }
   const myEvents = useEventStore((state) => state.myEvents)
+  const setMyEvents = useEventStore((state) => state.setMyEvents)
   const [registeredEvents, setRegisteredEvents] = useState<Event[]>([])
   const [activeTab, setActiveTab] = useState("my-events")
   const [sidebarSection, setSidebarSection] = useState<string>("overview")
@@ -48,6 +50,19 @@ export default function DashboardPage() {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+  
+  // Fetch user events on mount
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const data = await getUserEvents();
+        setMyEvents(data.events);
+      } catch (error) {
+        console.error('Failed to fetch user events:', error);
+      }
+    };
+    fetchEvents();
+  }, [setMyEvents]);
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {

@@ -37,7 +37,7 @@ type UserContextType = {
 
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
-export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const UserProvider: React.FC<{ children: ReactNode; skipAuthCheckOnMount?: boolean }> = ({ children, skipAuthCheckOnMount = false }) => {
   const [user, setUser] = useState<User | null>(null);
 
   const updateUserProfile = (updates: Partial<User>) => {
@@ -53,7 +53,7 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const updateUserEmail = (email: string) => {
-    setUser(prev => prev ? ({ ...prev, email }): prev);
+    setUser(prev => prev ? { ...prev, email } : prev);
   };
 
   const login = async (userData: User) => {
@@ -69,27 +69,40 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // On mount, check auth status from backend to sync user state
   useEffect(() => {
+    if (skipAuthCheckOnMount) {
+      return;
+    }
+    // Only verify user on initial mount, not on user state changes
+    let isMounted = true;
     const verifyUser = async () => {
+      console.log("UserContext: verifyUser called - checking auth status");
       try {
         const authResponse = await checkAuthStatus();
-        if (authResponse.user) {
+        console.log("UserContext: checkAuthStatus response received", authResponse);
+        if (isMounted && authResponse.user) {
           // Ensure emails property exists to satisfy User type
           const userWithEmails = {
             ...authResponse.user,
-            emails: authResponse.user.emails || [],
+            emails: (authResponse.user as any).emails || [],
           };
           setUser(userWithEmails);
-        } else {
+        } else if (isMounted) {
           setUser(null);
         }
       } catch (error) {
-        setUser(null);
-        console.error("Failed to verify auth status:", error);
+        if (isMounted) {
+          setUser(null);
+          console.error("Failed to verify auth status:", error);
+        }
       }
     };
 
     verifyUser();
-  }, [user]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [skipAuthCheckOnMount]);
 
   // Persist user state to localStorage
   useEffect(() => {

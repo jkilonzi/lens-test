@@ -1,6 +1,7 @@
 const Event = require('../models/event');
 const QRCode = require('qrcode');
 const { sendEmailWithQRCode } = require('../services/emailService');
+const db = require('../config/db'); // Added import for db
 
 // Controller to create a new event with Sequelize ORM
 exports.createEvent = async (req, res, next) => {
@@ -12,8 +13,9 @@ exports.createEvent = async (req, res, next) => {
     const eventTime = time || '00:00:00';
     const eventTimezone = timezone || 'UTC';
 
-    // Create event using Sequelize
+    // Create event using Sequelize, include user_id from authenticated user
     const newEvent = await Event.create({
+      user_id: req.user.userId,
       title,
       description: description || null,
       date,
@@ -61,6 +63,28 @@ exports.registerForEvent = async (req, res, next) => {
 
     return res.status(201).json({ message: 'Registered for event successfully', registration: newRegistration });
   } catch (err) {
+    next(err);
+  }
+};
+
+// Controller to get events created by authenticated user
+exports.getUserEvents = async (req, res, next) => {
+  const userId = req.user?.userId;
+
+  if (!userId) {
+    return res.status(401).json({ error: 'Unauthorized: User ID missing' });
+  }
+
+  try {
+    const events = await Event.findAll({
+      where: { user_id: userId },
+      order: [['date', 'DESC']],
+    });
+
+    return res.status(200).json({ events });
+  } catch (err) {
+    console.error('Error in getUserEvents:', err);
+    console.error('Stack trace:', err.stack);
     next(err);
   }
 };

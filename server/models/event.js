@@ -8,6 +8,10 @@ const Event = sequelize.define('events', {
     allowNull: false,
     defaultValue: DataTypes.UUIDV4,
   },
+  user_id: {  
+    type: DataTypes.UUID,
+    allowNull: false,
+  },
   title: {
     type: DataTypes.STRING,
     allowNull: false,

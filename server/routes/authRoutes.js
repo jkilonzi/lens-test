@@ -94,4 +94,32 @@ router.post('/wallet', async (req, res, next) => {
   }
 });
 
+//const authController = require('../controllers/authController');
+
+router.post('/google', async (req, res, next) => {
+  try {
+    await authController.googleAuth(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/wallet', async (req, res, next) => {
+  try {
+    await authController.walletAuth(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+});
+
+
+// GET /check-auth - Check authentication status (protected)
+router.get('/check-auth', verifyToken, async (req, res, next) => {
+  try {
+    await authController.checkAuth(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+});
+
 module.exports = router;

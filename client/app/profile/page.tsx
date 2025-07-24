@@ -57,7 +57,7 @@ export default function Profile() {
   const saveName = async () => {
     try {
       // Call backend API to update username
-      const response = await fetch('/user/update-username', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/account/update-username`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ export default function Profile() {
   const saveEmail = async () => {
     try {
       // Call backend API to update email
-      const response = await fetch('/user/update-email', {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/account/update-email`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

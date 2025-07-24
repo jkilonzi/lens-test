@@ -3,7 +3,7 @@ import { create } from "zustand"
 export type Event = {
   id: string
   title: string
-  description: string
+  description?: string
   date: string
   time: string
   endTime: string
@@ -15,12 +15,13 @@ export type Event = {
   requiresApproval: boolean
   isPrivate: boolean
   timezone: string
-  attendees:string
+  attendees?: string
 }
 
 type EventStore = {
   myEvents: Event[]
   addEvent: (event: Event) => void
+  setMyEvents: (events: Event[]) => void
 }
 
 export const useEventStore = create<EventStore>((set) => ({
@@ -28,5 +29,9 @@ export const useEventStore = create<EventStore>((set) => ({
   addEvent: (event) =>
     set((state) => ({
       myEvents: [...state.myEvents, event],
+    })),
+  setMyEvents: (events: Event[]) =>
+    set(() => ({
+      myEvents: events,
     })),
 }))
