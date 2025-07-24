@@ -54,14 +54,48 @@ export default function Profile() {
     setIsEditingEmail(true);
   };
 
-  const saveName = () => {
-    updateUserName(tempName);
-    setIsEditingName(false);
+  const saveName = async () => {
+    try {
+      // Call backend API to update username
+      const response = await fetch('/user/update-username', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: tempName }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        alert(`Error updating username: ${data.error || response.statusText}`);
+        return;
+      }
+      updateUserName(tempName);
+      setIsEditingName(false);
+    } catch (error) {
+      alert('Failed to update username');
+    }
   };
 
-  const saveEmail = () => {
-    updateUserEmail(tempEmail);
-    setIsEditingEmail(false);
+  const saveEmail = async () => {
+    try {
+      // Call backend API to update email
+      const response = await fetch('/user/update-email', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: tempEmail }),
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        alert(`Error updating email: ${data.error || response.statusText}`);
+        return;
+      }
+      updateUserEmail(tempEmail);
+      setIsEditingEmail(false);
+    } catch (error) {
+      alert('Failed to update email');
+    }
   };
 
   const cancelNameEdit = () => {

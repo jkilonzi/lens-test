@@ -3,6 +3,7 @@ const Joi = require('joi');
 const router = express.Router();
 const verifyToken = require('../middleware/authenticateToken');
 const eventsController = require('../controllers/eventsController');
+const otpController = require('../controllers/otpController');
 
 // Joi schema for event creation validation
 const eventCreationSchema = Joi.object({
@@ -52,6 +53,42 @@ router.post('/register', verifyToken, async (req, res, next) => {
 
     // Call controller to register for event
     await eventsController.registerForEvent(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /otp/send - Send OTP for signup/login
+router.post('/otp/send', async (req, res, next) => {
+  try {
+    await otpController.sendOTP(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /otp/verify - Verify OTP for signup/login
+router.post('/otp/verify', async (req, res, next) => {
+  try {
+    await otpController.verifyOTP(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+});
+
+const authController = require('../controllers/authController');
+
+router.post('/google', async (req, res, next) => {
+  try {
+    await authController.googleAuth(req, res, next);
+  } catch (err) {
+    next(err);
+  }
+});
+
+router.post('/wallet', async (req, res, next) => {
+  try {
+    await authController.walletAuth(req, res, next);
   } catch (err) {
     next(err);
   }
