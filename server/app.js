@@ -14,37 +14,43 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 
-// Configure CORS to allow requests from the frontend with credentials
+// ✅ Configure CORS to allow only your frontend (NO "*")
+const allowedOrigins = [process.env.NEXTAUTH_URL || "http://localhost:3000"];
 app.use(cors({
-  origin: [process.env.NEXTAUTH_URL, 'https://accounts.google.com', '*'],  // Allow frontend and Google
-  credentials: true,   // Allow cookies to be sent in cross-origin requests
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
 }));
 
-// CSRF token endpoint (apply csrfProtection to make req.csrfToken available)
+// ✅ CSRF token endpoint (to fetch CSRF token from frontend)
 app.get('/csrf-token', csrfProtection, csrfTokenHandler);
 
-// Apply CSRF protection and authentication only to protected routes
-app.use('/account', csrfProtection, verifyToken, userRoutes);
-
-// Apply CSRF protection and authentication to event routes
+// ✅ Apply CSRF & Auth only to protected WRITE routes in route files (not globally here)
+app.use('/account', verifyToken, userRoutes);
 app.use('/events', csrfProtection, verifyToken, eventRoutes);
 
-// Authentication routes (e.g., login, registration)
+
+// ✅ Public routes (e.g., login, signup)
 app.use('/auth', authRoutes);
 
-// Root route
+// Root
 app.get('/', (req, res) => {
   res.send('Server is Active and Running!');
 });
 
-// Centralized error handling
+// Centralized error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start the server
+// Start server
 const PORT = process.env.PORT || 3009;
 app.listen(PORT, () => {
-  console.log(`Server running on port http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

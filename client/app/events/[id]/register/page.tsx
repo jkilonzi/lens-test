@@ -56,7 +56,7 @@ export default function RegisterPage() {
       return;
     }
     try {
-      const response = await fetch(`http://localhost:3009/api/events/${id}/register`, {
+      const response = await fetch(`http://localhost:3009/events/${id}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
