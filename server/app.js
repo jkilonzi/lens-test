@@ -3,6 +3,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
+const eventRoutes = require('./routes/eventRoutes');
 const verifyToken = require('./middleware/authenticateToken');
 const { csrfProtection, csrfTokenHandler } = require('./middleware/csrfMiddleware');
 require('dotenv').config();
@@ -15,7 +16,7 @@ app.use(cookieParser());
 
 // Configure CORS to allow requests from the frontend with credentials
 app.use(cors({
-  origin: [process.env.FRONTEND_URL, 'https://accounts.google.com'],  // Allow frontend and Google
+  origin: [process.env.NEXTAUTH_URL, 'https://accounts.google.com', '*'],  // Allow frontend and Google
   credentials: true,   // Allow cookies to be sent in cross-origin requests
 }));
 
@@ -24,6 +25,9 @@ app.get('/csrf-token', csrfProtection, csrfTokenHandler);
 
 // Apply CSRF protection and authentication only to protected routes
 app.use('/account', csrfProtection, verifyToken, userRoutes);
+
+// Apply CSRF protection and authentication to event routes
+app.use('/events', csrfProtection, verifyToken, eventRoutes);
 
 // Authentication routes (e.g., login, registration)
 app.use('/auth', authRoutes);
@@ -42,5 +46,5 @@ app.use((err, req, res, next) => {
 // Start the server
 const PORT = process.env.PORT || 3009;
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port http://localhost:${PORT}`);
 });

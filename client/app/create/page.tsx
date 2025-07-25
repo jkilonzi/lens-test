@@ -16,12 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import Image from "next/image";
-import {
-  Edit3,
-  Camera,
-  Plus,
-  Loader2,
-} from "lucide-react";
+import { Edit3, Camera, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEventContext } from "@/context/EventContext";
@@ -36,14 +31,14 @@ export default function CreateEventPage() {
     description: "",
     date: "",
     time: "",
-    endTime: "", // Using camelCase to match Event type
+    endTime: "",
     location: "",
     category: "",
     capacity: "",
-    ticketPrice: "", // Using camelCase
-    isFree: true, // Using camelCase
-    requiresApproval: false, // Using camelCase
-    isPrivate: false, // Using camelCase
+    ticketPrice: "",
+    isFree: true,
+    requiresApproval: false,
+    isPrivate: false,
     timezone: "GMT+03:00 Nairobi",
   });
 
@@ -51,7 +46,7 @@ export default function CreateEventPage() {
     name: "",
     description: "",
     image: null as File | null,
-    imagePreview: "", // Using camelCase
+    imagePreview: "",
   });
 
   const router = useRouter();
@@ -83,14 +78,31 @@ export default function CreateEventPage() {
       return;
     }
 
-    // Prepare event data to match Event type
-    let poapImageUrl = "";
+    // Fetch CSRF token
+    let csrfToken = "";
+    try {
+      const csrfResponse = await fetch("http://localhost:3009/csrf-token", {
+        credentials: "include",
+      });
+      if (!csrfResponse.ok) throw new Error("Failed to fetch CSRF token");
+      const csrfData = await csrfResponse.json();
+      csrfToken = csrfData.csrfToken;
+      console.log("CSRF Token fetched:", csrfToken);
+    } catch (error) {
+      console.error("Error fetching CSRF token:", error);
+      alert("Failed to fetch security token. Please try again.");
+      setIsCreating(false);
+      return;
+    }
+
+    // Handle POAP image asynchronously with proper type checking
+    let poapImageUrl: string = "";
     if (poapData.image) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        poapImageUrl = reader.result as string; // Base64 for now, replace with actual URL
-      };
-      reader.readAsDataURL(poapData.image);
+      poapImageUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(poapData.image);
+      });
     }
 
     const eventToSave: Partial<Event> = {
@@ -100,45 +112,58 @@ export default function CreateEventPage() {
       time: eventData.time,
       endTime: eventData.endTime,
       location: eventData.location,
-      category: eventData.category,
-      capacity: eventData.capacity || null,
+      category: eventData.category || "",
+      capacity: eventData.capacity ? parseInt(eventData.capacity, 10) : undefined,
       ticketPrice: eventData.isFree ? "0" : eventData.ticketPrice,
       isFree: eventData.isFree,
       requiresApproval: eventData.requiresApproval,
       isPrivate: eventData.isPrivate,
       timezone: eventData.timezone,
-      creator: account.address,
-      poapName: poapData.name || null,
-      poapDescription: poapData.description || null,
-      poapImage: poapImageUrl || null,
-      type: eventData.category || "general", // Default to "general" or use category as type
+      poap_name: poapData.name || "",
+      poap_desc: poapData.description || "",
+      poap_image: poapImageUrl || "",
     };
 
     try {
-      const response = await fetch("http://localhost:3009/api/events", {
+      console.log("Sending event data:", eventToSave);
+      const response = await fetch("http://localhost:3009/events/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Authorization": `Bearer ${
+            document.cookie ? document.cookie.split("token=")[1]?.split(";")[0] || "" : ""
+          }`,
+          "X-CSRF-Token": csrfToken,
         },
+        credentials: "include",
         body: JSON.stringify(eventToSave),
       });
 
+      console.log("Response status:", response.status);
       if (!response.ok) {
-        throw new Error("Failed to create event");
+        const errorText = await response.text();
+        console.log("Response error text:", errorText);
+        throw new Error(`Failed to create event: ${errorText || response.statusText}`);
       }
 
       const data = await response.json();
-      const eventId = data.id; // Assuming the server returns { id, ... }
+      const eventId = data.eventId;
 
-      // Add event to context with the server-provided id
       addEvent({
         ...eventToSave,
-        id: eventId, // Ensure id is a string from server response
+        id: eventId,
       } as Event);
 
-      router.push(`/event-created/${eventId}`);
+      router.push(`/event-created/${data?.event?.id}`);
+
     } catch (error) {
-      console.error("Error creating event:", error);
+      if (error instanceof Error) {
+        console.error("Error creating event:", error);
+        alert(`An error occurred while creating the event: ${error.message}`);
+      } else {
+        console.error("Unexpected error:", error);
+        alert("An unexpected error occurred while creating the event.");
+      }
     } finally {
       setIsCreating(false);
     }
@@ -237,11 +262,7 @@ export default function CreateEventPage() {
           {/* Image Upload Section */}
           <div className="bg-gray-900 rounded-lg h-32 flex items-center justify-center relative overflow-hidden">
             {imagePreview ? (
-              <img
-                src={imagePreview}
-                alt="Event preview"
-                className="w-full h-full object-cover"
-              />
+              <img src={imagePreview} alt="Event preview" className="w-full h-full object-cover" />
             ) : (
               <div className="text-center">
                 <Camera className="w-6 h-6 text-white mx-auto mb-2" />
@@ -295,7 +316,7 @@ export default function CreateEventPage() {
                 type="time"
                 value={eventData.time}
                 onChange={(e) => setEventData({ ...eventData, time: e.target.value })}
-                className="border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                className="flex h-auto"
                 required
               />
             </div>
@@ -425,7 +446,9 @@ export default function CreateEventPage() {
             <Switch
               id="approval"
               checked={eventData.requiresApproval}
-              onCheckedChange={(checked) => setEventData({ ...eventData, requiresApproval: checked })}
+              onCheckedChange={(checked) =>
+                setEventData({ ...eventData, requiresApproval: checked })
+              }
             />
           </div>
 
@@ -508,7 +531,8 @@ export default function CreateEventPage() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <p className="text-sm text-gray-600">
-                    POAP (Proof of Attendance Protocol) allows you to create commemorative NFTs for your event attendees.
+                    POAP (Proof of Attendance Protocol) allows you to create commemorative NFTs for your
+                    event attendees.
                   </p>
                   <div className="space-y-4">
                     <div>
@@ -518,7 +542,9 @@ export default function CreateEventPage() {
                         placeholder="Enter POAP name"
                         className="mt-1"
                         value={poapData.name}
-                        onChange={(e) => setPoapData((prev) => ({ ...prev, name: e.target.value }))}
+                        onChange={(e) =>
+                          setPoapData((prev) => ({ ...prev, name: e.target.value }))
+                        }
                       />
                     </div>
                     <div>
@@ -529,7 +555,9 @@ export default function CreateEventPage() {
                         rows={3}
                         className="mt-1"
                         value={poapData.description}
-                        onChange={(e) => setPoapData((prev) => ({ ...prev, description: e.target.value }))}
+                        onChange={(e) =>
+                          setPoapData((prev) => ({ ...prev, description: e.target.value }))
+                        }
                       />
                     </div>
                     <div>
