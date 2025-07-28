@@ -3,9 +3,13 @@ const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET;
 
 const verifyToken = (req, res, next) => {
-  // Check for token in Authorization header or cookies
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1] || req.cookies.token;
+  let token;
+
+  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+    token = req.headers.authorization.split(" ")[1];
+  } else if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  }
 
   if (!token) {
     return res.status(401).json({ error: 'Access denied: No token provided' });
@@ -17,14 +21,13 @@ const verifyToken = (req, res, next) => {
     next();
   } catch (err) {
     console.error("JWT verification error:", err.message);
-    
-    // Handle specific JWT errors
+
     if (err.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Token expired' });
     } else if (err.name === 'JsonWebTokenError') {
       return res.status(401).json({ error: 'Invalid token' });
     }
-    
+
     return res.status(401).json({ error: 'Token verification failed' });
   }
 };

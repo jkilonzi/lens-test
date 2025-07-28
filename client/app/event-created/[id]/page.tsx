@@ -18,39 +18,31 @@ export default function EventSuccessPage() {
   const [copied, setCopied] = useState(false);
   const [event, setEvent] = useState<any>(null);
 
-  useEffect(() => {
-    if (!id) return;
-    const fetchEvent = async () => {
-      try {
-        const response = await fetch(`http://localhost:3009/api/events/${id}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
+useEffect(() => {
+  const fetchEvent = async () => {
+    try {
+      const response = await fetch(`http://localhost:3009/events/${id}`, {
+        method: "GET",
+        credentials: "include",
+      });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch event");
-        }
+      if (!response.ok) throw new Error("Failed to fetch event");
 
-        const eventData = await response.json();
-        setEvent(eventData);
+      const eventData = await response.json();
+      setEvent(eventData);
 
-        if (eventData.poap_name) {
-          const checkinUrl = `http://localhost:3000/events/${id}/checkin`;
-          const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(checkinUrl)}`;
-          setQrCodeDataUrl(qrUrl);
-        } else {
-          setQrCodeDataUrl("");
-        }
-        const regUrl = `http://localhost:3000/events/${id}/register`;
-        setRegistrationUrl(regUrl);
-      } catch (error) {
-        console.error("Error fetching event:", error);
-      }
-    };
-    fetchEvent();
-  }, [id]);
+      // ✅ Set registration URL
+      setRegistrationUrl(`${window.location.origin}/events/register/${id}`);
+
+    } catch (error) {
+      console.error("Error fetching event:", error);
+    }
+  };
+
+  fetchEvent();
+}, [id]);
+
+
 
   const copyLink = async () => {
     try {
