@@ -250,81 +250,96 @@ export default function DashboardPage() {
         </button>
 
         {/* Sidebar */}
+        {/* Sidebar */}
         <aside 
           id="sidebar"
           className={`${
-            sidebarOpen ? 'translate-x-0 w-24' : '-translate-x-full lg:translate-x-0'
-          } fixed lg:static top-0 left-0 z-20 w-72 min-h-screen bg-[#0B1620] py-6 px-4 flex flex-col gap-6 transition-transform duration-300 ease-in-out`}
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          } fixed lg:static top-0 left-0 z-20 w-64 lg:w-64 min-h-screen bg-[#F6FBFF] text-[#0B1620] py-6 flex flex-col transition-transform duration-300 ease-in-out`}
         >
-          <nav className="flex-1 flex flex-col p-6 gap-4">
+          <nav className="flex-1 flex flex-col px-4 gap-2">
             <button 
               onClick={() => {
                 setSidebarSection("overview");
                 if (isMobile) setSidebarOpen(false);
               }}
-              className={`flex m-2 items-center gap-4 font-medium text-xl hover:text-gray-300 ${sidebarSection === "overview" ? "text-white" : "text-gray-400 font-normal text-xl"}`}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${
+                sidebarSection === "overview" 
+                  ? "text-white bg-[#1A2332]" 
+                  : "text-gray-400 hover:text-white hover:bg-[#1A2332]"
+              }`}
             >
-              <svg width="20" height="20" fill="none">
-                <rect width="20" height="20" rx="4" fill="#fff" fillOpacity="0.1" />
-                <rect x="4" y="4" width="4" height="4" rx="1" fill="#fff" />
-                <rect x="12" y="4" width="4" height="4" rx="1" fill="#fff" />
-                <rect x="4" y="12" width="4" height="4" rx="1" fill="#fff" />
-                <rect x="12" y="12" width="4" height="4" rx="1" fill="#fff" />
-              </svg>
+              <Image src="/material-symbols_dashboard-rounded.svg" alt="overviewicon" width={20} height={20} className="flex-shrink-0"/>
               Overview
             </button>
+            
             <button
               onClick={() => {
                 setSidebarSection("guests");
                 if (isMobile) setSidebarOpen(false);
               }}
-              className={`flex items-center gap-4 m-2 font-medium text-lg hover:text-white ${sidebarSection === "guests" ? "text-white" : "text-gray-400"}`}
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${
+                sidebarSection === "guests" 
+                  ? "text-white bg-[#1A2332]" 
+                  : "text-gray-400 hover:text-white hover:bg-[#1A2332]"
+              }`}
             >
-              <Image src="/mdi_people.png" alt = "guesticon" width={20} height={20}/>
+              <Image src="/mdi_people.png" alt="guesticon" width={20} height={20} className="flex-shrink-0"/>
               Guests
             </button>
+            
             <button
               onClick={() => {
                 setSidebarSection("registration");
                 if (isMobile) setSidebarOpen(false);
               }}
-              className="flex items-center font-medium text-lg gap-4 m-2 text-gray-400 hover:text-white"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${
+                sidebarSection === "registration" 
+                  ? "text-white bg-[#1A2332]" 
+                  : "text-gray-400 hover:text-white hover:bg-[#1A2332]"
+              }`}
             >
-             <Image src="/Vector (1).png" alt ="reg" width={20} height={20}/>
+              <Image src="/Vector (1).png" alt="reg" width={20} height={20} className="flex-shrink-0"/>
               Registration
             </button>
+            
             <button
               onClick={() => {
                 setSidebarSection("blast");
                 if (isMobile) setSidebarOpen(false);
               }}
-              className="flex items-center gap-4 m-3 font-medium text-lg text-gray-400 hover:text-white"
+              className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-colors ${
+                sidebarSection === "blast" 
+                  ? "text-white bg-[#1A2332]" 
+                  : "text-gray-400 hover:text-white hover:bg-[#1A2332]"
+              }`}
             >
-              <Image src="/Vector (1).png" alt ="reg" width={20} height={20}/>
+              <Image src="/Vector (1).png" alt="reg" width={20} height={20} className="flex-shrink-0"/>
               Blast
             </button>
+            
             <Link 
-                href="/bounties" 
-                className="flex items-center font-medium text-lg m-2 p-2 gap-2 text-gray-400 hover:text-white"
-                onClick={() => {
-                  if (isMobile) setSidebarOpen(false);
-                }}
-              >
-                <Image src="/Vector (2).png" alt="" width={20} height={20}/>
-                Bounties
-              </Link>
-            <div className="p-6 m-3">
-              <span className="text-gray-500 font-normal text-xl mb-2 block">Insight</span>
+              href="/bounties" 
+              className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm text-gray-400 hover:text-white hover:bg-[#1A2332] transition-colors"
+              onClick={() => {
+                if (isMobile) setSidebarOpen(false);
+              }}
+            >
+              <Image src="/Vector (2).png" alt="" width={20} height={20} className="flex-shrink-0"/>
+              Bounties
+            </Link>
+            
+            <div className="mt-6">
+              <span className="text-gray-500 font-medium text-xs uppercase tracking-wider px-4 mb-3 block">Insights</span>
               <button 
                 onClick={() => {
                   if (isMobile) setSidebarOpen(false);
                 }}
-                className="flex items-center font-medium text-lg gap-4 m-2 p-2 text-gray-400 hover:text-white mb-2"
+                className="flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm text-gray-400 hover:text-white hover:bg-[#1A2332] transition-colors w-full"
               >
-                <Image src="/bxs_chart.png" alt="" width={20} height={20}/>
+                <Image src="/bxs_chart.png" alt="" width={20} height={20} className="flex-shrink-0"/>
                 Statistics
               </button>
-              
             </div>
           </nav>
         </aside>

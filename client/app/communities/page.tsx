@@ -36,51 +36,138 @@ export default function CommunityEventsPage(){
   const events = [
     {
       id: 1,
-      title: "SUI Community Ghana",
+      title: "Sui Community Ghana",
       description: "Join our vibrant community in Ghana where we explore the latest developments in blockchain technology, share knowledge, and build connections with fellow enthusiasts.",
       image: "https://i.ibb.co/LDDGGYdF/Screenshot-2025-06-24-141355.png",
       category: "Community",
-      link: '/communities/ghana'
+      link: '/communities/ghana',
+      flagIcon: "/Ghana (GH).svg"
     },
     {
       id: 2,
-      title: "SUI Community India",
+      title: "Sui Community India",
       description: "Join our vibrant community in India where we explore the latest developments in blockchain technology, share knowledge, and build connections with fellow enthusiasts.",
-      image: "/cOMMUNITY CARD (1).png",
+      image: "https://i.ibb.co/5hdNKtFT/Screenshot-2025-07-28-235207.png",
       category: "Community",
-      link: '/communities/ghana'
+      link: '/communities/india',
+      flagIcon: "/Portugal (PT) (3).svg"
     },
     {
       id: 3,
-      title: "SUI Community Korea",
+      title: "Sui Community Korea",
       description: "Join our vibrant community in Korea where we explore the latest developments in blockchain technology, share knowledge, and build connections with fellow enthusiasts.",
       image: "/cOMMUNITY CARD.png",
       category: "Community",
-      link: '/communities/ghana'
+      link: '/communities/korea',
+      flagIcon: "/Portugal (PT).svg"
     },
     {
       id: 4,
-      title: "SUI Community Kenya",
+      title: "Sui Community Kenya",
       description: "The Kenyan chapter of our global community brings together developers, entrepreneurs, and blockchain enthusiasts to collaborate and learn together.",
       image: "https://i.ibb.co/YBvqHqsp/Screenshot-2025-06-24-030451.png",
       category: "Community",
-      link: '/communities/kenya'
+      link: '/communities/kenya',
+      flagIcon: "/Portugal (PT) (1).svg"
     },
     {
       id: 5,
-      title: "SUI Community Nigeria",
+      title: "Sui Community Nigeria",
       description: "Nigeria's largest blockchain community focused on SUI ecosystem development, education, and creating opportunities for local developers and entrepreneurs.",
-      image: "https://i.ibb.co/W4zMd77q/Screenshot-2025-06-24-030948.png",
+      image: "https://i.ibb.co/0jzvvMmY/Screenshot-2025-07-28-234111.png",
       category: "Community",
-      link: '/communities/nigeria'
+      link: '/communities/nigeria',
+      flagIcon: "/Nigeria (NG).svg"
     },
     {
       id: 6,
-      title: "SUI Gaming Africa",
+      title: "SUI Pakistan",
       description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
-      image: "https://i.ibb.co/1fmbwkSM/Screenshot-2025-06-24-141856.png",
+      image: "https://i.ibb.co/QjjYs0rH/Screenshot-2025-07-28-232824.png",
       category: "Development",
-      link: '/communities/gaming-africa'
+      link: '/communities/pakistan',
+      flagIcon: "/Pakistan (PK).svg"
+    },
+    {
+      id: 7,
+      title: "SUI Community Vietnam",
+      description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
+      image: "https://i.ibb.co/NgpSDJMW/Screenshot-2025-07-28-233205.png",
+      category: "Development",
+      link: '/communities/gaming-africa',
+      flagIcon: "/Vietnam (VN).svg"
+    },
+    {
+      id: 8,
+      title: "SUI Community Portugal",
+      description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
+      image:"https://i.ibb.co/Y4k6M6p1/Screenshot-2025-07-28-235104.png",
+      category: "Development",
+      link: '/communities/portugal',
+      flagIcon: "/Portugal (PT) (2).svg"
+    },
+    {
+      id: 9,
+      title: "SUI Community Turkiye",
+      description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
+      image: "https://i.ibb.co/Jjf3bj6M/Screenshot-2025-07-28-234949.png",
+      category: "Development",
+      link: '/communities/turkiye',
+      flagIcon: "/Portugal (PT) (4).svg"
+    },
+    {
+      id: 10,
+      title: "SUI Community Japan",
+      description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
+      image: "https://i.ibb.co/M58pNWTd/Screenshot-2025-07-28-234306.png",
+      category: "Development",
+      link: '/communities/gaming-africa',
+      flagIcon: "/Portugal (PT) (5).svg"
+    },
+    {
+      id: 11,
+      title: "SUI Community China",
+      description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
+      image: "https://i.ibb.co/cXJkR8pz/Screenshot-2025-07-28-234503.png",
+      category: "Development",
+      link: '/communities/china',
+      flagIcon: "/Portugal (PT) (6).svg"
+    },
+    {
+      id: 12,
+      title: "SUI Community Uganda",
+      description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
+      image: "https://i.ibb.co/5gcT3VTc/Screenshot-2025-07-28-233947.png",
+      category: "Development",
+      link: '/communities/uganda',
+      flagIcon: "/Portugal (PT) (7).svg"
+    },
+    {
+      id: 13,
+      title: "SUI Community Phillipines",
+      description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
+      image: "https://i.ibb.co/8LR9KvLg/Screenshot-2025-07-28-233810.png",
+      category: "Development",
+      link: '/communities/phillipines',
+      flagIcon: "/Portugal (PT) (8).svg"
+    },
+    {
+      id: 15,
+      title: "SUI Community Indonesia",
+      description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
+      image: "https://i.ibb.co/zHGXK8DM/Screenshot-2025-07-28-233403.png",
+      category: "Development",
+      link: '/communities/gaming-africa',
+      flagIcon: "/Uganda (UG).svg"
+    },
+    {
+      id: 16,
+      title: "SUI Community France",
+      description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
+      image: "https://i.ibb.co/pjRM3qg1/Screenshot-2025-07-28-235342.png",
+      category: "Development",
+      link: '/communities/france',
+      flagIcon: "/Uganda (UG) (1).svg"
     },
   ]
   
@@ -166,44 +253,59 @@ export default function CommunityEventsPage(){
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               {filteredEvents.map((event) => (
-                <div key={event.id} className="rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-shadow group cursor-pointer min-h-[300px] sm:min-h-[400px]">
-                  {/* Image */}
-                  <div className="relative h-36 sm:h-48 bg-gradient-to-br from-blue-100 to-purple-100">
-                    <div className="absolute inset-0 bg-black bg-opacity-20"></div>
-                    <div className="absolute top-2 sm:top-4 left-2 sm:left-4">
-                      <span className="bg-white bg-opacity-90 text-gray-800 px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium">
-                        {event.category}
-                      </span>
-                    </div>
-                    {/* Background image */}
+                <div key={event.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow group cursor-pointer">
+                  {/* Image Section */}
+                  <div className="relative h-32 sm:h-40 bg-gradient-to-br from-blue-50 to-purple-50">
                     <div className="w-full h-full relative">
-                      <Image 
+                      <img 
                         src={event.image} 
                         alt={event.title} 
-                        fill
-                        className="object-cover"
+                        width={400}
+                        height={200}
+                        className="w-full h-full object-cover rounded-t-2xl"
+                        
                       />
                     </div>
                   </div>
 
-                  {/* Content */}
+                  {/* Content Section */}
                   <div className="p-4 sm:p-6">
-                    <h3 className="text-lg sm:text-xl font-medium text-[#101928] mb-2 line-clamp-1">
-                      {event.title}
-                    </h3>
-                    <p className="text-[#8A94A5] text-xs sm:text-sm mb-4 sm:mb-6 leading-relaxed line-clamp-3">
+                    {/* Header with title and flag */}
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className="text-lg sm:text-xl font-semibold text-[#101928] flex-1 mr-3">
+                        {event.title}
+                      </h3>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-[#8A94A5] text-sm sm:text-base mb-4 sm:mb-6 leading-relaxed ">
                       {event.description}
                     </p>
 
-                    {/* Action Button */}
-                    <Link 
-                      href={event.link}
-                      className="inline-flex items-center font-medium text-sm w-full"
-                    >
-                      <Button className='w-full text-[#101928] bg-gray-100 rounded-xl border-[#101928] hover:bg-slate-100 border text-xs sm:text-sm'>
-                        View community events
-                      </Button>
-                    </Link>
+                    {/* Action Row: Button & Flag */}
+                    <div className="flex items-center justify-between mt-4">
+                      <Link 
+                        href={event.link}
+                        className="block w-full max-w-[80%] mr-2"
+                      >
+                        
+                      <button className='w-auto text-sm font-normal p-2.5 bg-gray-100 text-black border-2 border-black rounded-full flex items-center justify-center'>
+                        View Community Events  
+                      </button>
+
+                      </Link>
+                      <div className="flex-shrink-0 ml-2">
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gray-100 flex items-center justify-center text-lg sm:text-xl">
+                          <Image 
+                            src={event.flagIcon} 
+                            alt={`${event.title} Flag`} 
+                            width={64} 
+                            height={64} 
+                            className="object-contain"
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -226,4 +328,3 @@ export default function CommunityEventsPage(){
     </div>
   )
 }
-

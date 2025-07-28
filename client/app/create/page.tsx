@@ -25,7 +25,8 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEventContext } from "@/context/EventContext";
-import { useCurrentAccount } from "@mysten/dapp-kit";
+import { ConnectButton, useCurrentAccount } from "@mysten/dapp-kit";
+import { useUser } from '../../context/UserContext';
 
 // Import Event type from EventContext to ensure consistency
 import { Event } from "@/context/EventContext";
@@ -184,6 +185,7 @@ export default function CreateEventPage() {
       reader.readAsDataURL(file);
     }
   };
+  const { user } = useUser();
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -217,12 +219,17 @@ export default function CreateEventPage() {
           </nav>
 
           <div className="flex text-sm items-center space-x-4">
-            <Link href="/auth/signin">
-              <Button className="bg-[#4DA2FF] hover:bg-blue-500 transition-colors text-white px-6 rounded-xl">
-                Sign In
-              </Button>
-            </Link>
-
+          {!user ? (
+                <ConnectButton />
+              ) : (
+                <Link href="/profile">
+                  <img
+                    src={user.avatarUrl || "https://via.placeholder.com/100"}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full border-2 border-blue-500 cursor-pointer"
+                  />
+                </Link>
+              )}
             <Link href="/create">
               <Button className="bg-[#4DA2FF] hover:bg-blue-500 transition-colors text-white px-6 rounded-xl">
                 Create Event

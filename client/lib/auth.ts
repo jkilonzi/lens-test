@@ -1,6 +1,6 @@
 // Authentication API client functions
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3009';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3009' ||'https://probable-dollop-5w7q7xwpwgxfvwjj-3009.app.github.dev/';
 
 interface AuthResponse {
   message: string;
