@@ -33,7 +33,7 @@ export default function BountiesPage() {
             <Link href="/create">
               <button className="bg-gray-900 text-white px-6 py-2 rounded-full font-semibold shadow hover:bg-gray-800 transition">Create Bounty</button>
             </Link>
-            <Link href="/bounties">
+            <Link href="/Browsebounty">
               <button className="border border-gray-300 text-gray-900 px-6 py-2 rounded-full font-semibold bg-white hover:bg-gray-100 transition">Browse Bounties</button>
             </Link>
           </div>
@@ -50,28 +50,22 @@ export default function BountiesPage() {
             {/* Text Content (left half) */}
             <div className="flex-1 flex flex-col justify-center px-8 py-6">
               <div className="flex items-center mb-2">
-                <span className="text-2xl mr-2">🧑‍💻</span>
+                <span className="text-2xl mr-2"></span>
                 <span className="text-xs text-gray-500 font-semibold">For Bounty Creators</span>
               </div>
               <h2 className="text-2xl font-bold mb-2">Need something done? Let the community handle it.</h2>
               <p className="text-gray-500 text-sm">Post a task, set a reward, and get high-quality submissions from talented contributors, fast and hassle-free.</p>
             </div>
             {/* Image Placeholder (right half) */}
-            <div className="flex-1 flex items-center justify-center bg-gray-100">
-              <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
-                {/* You can replace this with an actual image later */}
-                <img src="https://hackersonlineclub.com/wp-content/uploads/2019/05/Bug-Bounty-img.png" alt="Bounty" />
-              </div>
+            <div className="flex-1 h-full overflow-hidden">
+              <img src="https://hackersonlineclub.com/wp-content/uploads/2019/05/Bug-Bounty-img.png" alt="Bounty" className="w-full h-full object-cover" />
             </div>
           </div>
           {/* Contributors Card */}
           <div className="bg-white rounded-2xl shadow flex flex-row min-h-[220px] overflow-hidden">
             {/* Image Placeholder (left half) */}
-            <div className="flex-1 flex items-center justify-center bg-gray-100">
-              <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
-                {/* You can replace this with an actual image later */}
-                <img src="https://i.pinimg.com/1200x/e4/9a/22/e49a22f910418c6cf79cb7534c3c0d8e.jpg" alt="Contributor" />
-              </div>
+            <div className="flex-1 h-full overflow-hidden">
+              <img src="https://hackersonlineclub.com/wp-content/uploads/2019/05/Bug-Bounty-img.png" alt="Contributor" className="w-full h-full object-cover" />
             </div>
             {/* Text Content (right half) */}
             <div className="flex-1 flex flex-col justify-center px-8 py-6">
