@@ -1,283 +1,158 @@
-"use client"
+'use client';
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Calendar, DollarSign, Menu } from "lucide-react"
-import Link from "next/link"
-import Image from "next/image"
-import { ConnectButton } from "@mysten/dapp-kit"
-import { useUser } from '../../context/UserContext';
+import Link from 'next/link';
 
-interface Bounty {
-  id: number
-  title: string
-  description: string
-  author: {
-    name: string
-    avatar: string
-  }
-  reward: string
-  deadline: string
-  tweet:string
-}
-
-interface BountyCardProps {
-  bounty: Bounty
-}
-
-const BountyCard: React.FC<BountyCardProps> = ({ bounty }) => {
+export default function BountiesPage() {
   return (
-    <Card className="bg-white font-inter shadow-sm border border-gray-200 rounded-3xl mb-6 w-full max-w-none">
-      <CardContent className="p-4 sm:p-6 lg:p-8">
-        <div className="flex flex-col lg:flex-row items-start justify-between gap-6">
-          {/* Left Section - Main Content */}
-          <div className="flex-1 flex-col w-full lg:w-auto min-w-0">
-            <div className="mb-6">
-              {/* Icon and Tags */}
-              <div className="flex sm:flex-row sm:items-center gap-4 mb-4">
-                <div className="w-12 h-12 bg-gray-900 rounded-full flex items-center justify-center text-white font-semibold flex-shrink-0">
-                  <Image 
-                    src="/Vector.png" 
-                    alt="icon" 
-                    width={24} 
-                    height={24}
-                  />
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <button className="bg-white text-[#865503] py-1 px-3 sm:px-4 text-xs sm:text-sm font-medium border border-[#865503] rounded-3xl whitespace-nowrap">
-                    Dapp
-                  </button>
-                  <button className="bg-white text-[#04326B] py-1 px-3 sm:px-4 text-xs sm:text-sm font-medium border border-[#04326B] rounded-3xl whitespace-nowrap">
-                    Development
-                  </button>
-                </div>
-              </div>
-
-              {/* Title */}
-              <h3 className="text-xl sm:text-2xl lg:text-3xl font-medium text-[#101928] mb-4 leading-tight">
-                {bounty.title}
-              </h3>
-            </div>
-            
-            {/* Description */}
-            <p className="text-[#8A94A5] text-sm sm:text-base mb-6 leading-relaxed font-medium">
-              {bounty.description}
-            </p>
-            
-            {/* Deadline and Reward */}
-            <div className="flex flex-col sm:flex-row gap-4 mb-6">
-              <div className="flex items-center text-xs sm:text-sm text-[#101928] font-medium">
-                <Calendar className="w-4 h-4 mr-2 flex-shrink-0" />
-                <span className="truncate">{bounty.deadline}</span>
-              </div>
-              
-              <div className="flex items-center text-xs sm:text-sm text-[#101928] font-medium">
-                <DollarSign className="w-4 h-4 mr-2 flex-shrink-0"/>
-                <span className="truncate">{bounty.reward}</span>
-              </div>
-            </div>
-            
-            {/* Submit Button */}
-            <Button className="bg-[#4DA2FF] hover:bg-blue-600 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-sm font-medium transition-colors w-full sm:w-auto">
-              Submit work
-            </Button>
-          </div>
-          
-          {/* Right Section - Tweet Content */}
-          <div className="w-full lg:w-80 xl:w-96 flex-shrink-0">
-            <div className="border rounded-lg p-4 bg-gray-50/50">
-              {/* Author Info */}
-              <div className="flex items-center mb-3">
-                <div className="w-8 h-8 rounded-full overflow-hidden mr-3 flex-shrink-0">
-                  <Image
-                    src={bounty.author.avatar}
-                    alt={bounty.author.name}
-                    width={32}
-                    height={32}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <span className="text-sm sm:text-base font-medium text-[#101928] truncate">
-                  {bounty.author.name}
-                </span>
-              </div>
-              
-              {/* Tweet Content */}
-              <p className="text-[#8A94A5] text-xs sm:text-sm mb-4 leading-relaxed font-medium line-clamp-6">
-                {bounty.tweet}
-              </p>
-              
-              {/* View Bounty Link */}
-              <button className="bg-[white] text-blue-400 px-4 sm:px-6 py-2 sm:py-3 rounded-3xl border border-[#4DA2FF] text-sm font-medium transition-colors w-full sm:w-auto">
-                View on X
-              </button>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
-
-const CommunityBounties: React.FC = () => {
-  const {  user } = useUser();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
- 
-  const [bounties, setBounties] = useState<Bounty[]>([
-    {
-      id: 1,
-      title: "Build a fully functional BTC node",
-      description: "$10,000  to any dev who builds a fully functional BTC full node as an open-source Sui Move contract by May 31st. Contract’s state should be updated in a trustless form every time a new BTC block is mined + proper handling of orphaned blocks and BTC node updates will be appreciated. The top fully functional implementation will be selected by June 7th”. Good luck \n @kostascrypto ",
-      author: {
-        name: "Kostas Kryptos",
-        avatar: "/Ellipse 3.png"
-      },
-      reward: "$5,000",
-      deadline: "Deadline: 20th, December 2025",
-      tweet:"Beginning this May, I’ll be hosting monthly X  crypto hackathons focused on a single topic that I find interesting or even crazy. T&C will follow soon, but let’s kick things off with the 1st cool challenge:“$10,000  to any dev who builds a fully functional BTC full node as an open-source Sui Move contract by May 31st. Contract’s state should be updated in a trustless form every time a new BTC block is mined + proper handling of orphaned blocks and BTC node updates will be appreciated. The top fully functional implementation will be selected by June 7th”. Good luck"
-      
-    },
-    {
-      id: 2,
-      title: "Build a fully functional LTC node",
-      description: "Looking to commission the building of a litecoin node that can track and manage multiple wallets and addresses. The node should be able to handle high transaction volumes and provide real-time updates on wallet balances and transaction history. It should also include features for creating new wallets, importing existing ones, and generating new addresses. The solution should be scalable and secure, with proper error handling and logging capabilities.",
-      author: {
-        name: "Kostas Kryptos",
-        avatar: "/Ellipse 3.png"
-      },
-      reward: "$3,500",
-      deadline: "5 days left",
-      tweet:"Beginning this May, I’ll be hosting monthly X  crypto hackathons focused on a single topic that I find interesting or even crazy. T&C will follow soon, but let’s kick things off with the 1st cool challenge:“$10,000  to any dev who builds a fully functional BTC full node as an open-source Sui Move contract by May 31st. Contract’s state should be updated in a trustless form every time a new BTC block is mined + proper handling of orphaned blocks and BTC node updates will be appreciated. The top fully functional implementation will be selected by June 7th”. Good luck",
-      
-    }
-  ]);
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#F5F6FA] text-gray-800 flex flex-col items-center">
       {/* Header */}
-      <header className="bg-white/95 backdrop-blur-sm border-b sticky top-0 z-50">
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <Link href="/landing" className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center">
-                <Image 
-                  src="https://i.ibb.co/PZHSkCVG/Suilens-Logo-Mark-Suilens-Black.png" 
-                  alt="Suilens Logo" 
-                  width={60}
-                  height={60}
-                  className="object-contain"
-                />
-              </div>
-              <span className="text-xl sm:text-2xl font-bold text-[#020B15]">Suilens</span>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex text-sm font-inter items-center space-x-8">
-              {["Communities", "Discover", "Dashboard","Bounties"].map((item) => (
-                <Link
-                  key={item}
-                  href={`/${item.toLowerCase().replace(' ', '-')}`}
-                  className="text-gray-600 font-medium hover:text-gray-900 transition-colors"
-                >
-                  {item}
-                </Link>
-              ))}
-            </nav>
-
-            {/* Desktop Actions */}
-            <div className="hidden lg:flex text-sm items-center space-x-4">                                    
-              <Link href='/create'>
-                <Button className="bg-[#4DA2FF] hover:bg-blue-500 transition-colors text-white px-6 rounded-xl">
-                  Create Event
-                </Button>
-              </Link>
-              {!user ? (
-                <ConnectButton />
-              ) : (
-                <Link href="/profile">
-                  <img
-                    src={user.avatarUrl || "https://via.placeholder.com/100"}
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full border-2 border-blue-500 cursor-pointer"
-                  />
-                </Link>
-              )}
-            </div>
-
-            {/* Mobile Menu Button */}
-            <div className="lg:hidden flex items-center space-x-2">
-              {!user ? (
-                <ConnectButton />
-              ) : (
-                <Link href="/profile">
-                  <img
-                    src={user.avatarUrl || "https://via.placeholder.com/100"}
-                    alt="Profile"
-                    className="w-8 h-8 rounded-full border-2 border-blue-500 cursor-pointer"
-                  />
-                </Link>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="p-2"
-              >
-                <Menu className="w-5 h-5" />
-              </Button>
-            </div>
-          </div>
-
-          {/* Mobile Navigation */}
-          {isMobileMenuOpen && (
-            <nav className="lg:hidden mt-4 pb-4 border-t pt-4">
-              <div className="flex flex-col space-y-3">
-                {["Communities", "Discover", "Dashboard","Bounties"].map((item) => (
-                  <Link
-                    key={item}
-                    href={`/${item.toLowerCase().replace(' ', '-')}`}
-                    className="text-gray-600 font-medium hover:text-gray-900 transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item}
-                  </Link>
-                ))}
-                <Link href='/create' onClick={() => setIsMobileMenuOpen(false)}>
-                  <Button className="bg-[#4DA2FF] hover:bg-blue-500 transition-colors text-white px-6 rounded-xl w-full mt-2">
-                    Create Event
-                  </Button>
-                </Link>
-              </div>
-            </nav>
-          )}
+      <header className="w-full max-w-7xl px-4 py-6 flex justify-between items-center">
+        <div className="flex items-center space-x-4">
+          <img src="/Suilens LogoMark(Suilens Black).png" alt="Suilens Logo" className="h-8" />
+          <nav className="space-x-6 text-sm font-medium text-gray-500">
+            <Link href="/" className="hover:text-gray-900">Home</Link>
+            <Link href="/communities" className="hover:text-gray-900">Communities</Link>
+            <Link href="/discover" className="hover:text-gray-900">Discover Events</Link>
+            <Link href="/bounties" className="text-gray-900 font-semibold">Bounties</Link>
+            <Link href="/dashboard" className="hover:text-gray-900">Dashboard</Link>
+          </nav>
+        </div>
+        <div className="flex items-center space-x-4">
+          <Link href="/create">
+            <button className="bg-blue-500 text-white px-4 py-2 rounded-full font-semibold shadow hover:bg-blue-600 transition">Create Event</button>
+          </Link>
+          <img src="/placeholder-user.jpg" alt="Profile" className="h-8 w-8 rounded-full object-cover" />
         </div>
       </header>
-
-      {/* Main Content */}
-      <main className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
-        {/* Header Section */}
-        <div className="text-center mb-8 sm:mb-12">
-          <h1 className="text-3xl sm:text-5xl lg:text-7xl font-medium text-[#101928] mb-4 leading-tight">
-            Community Bounties
-          </h1>
-          <p className="text-base sm:text-xl lg:text-2xl font-normal text-[#667185] max-w-2xl mx-auto">
-            Earn SUI tokens by contributing to the ecosystem
-          </p>
-        </div>
-
-        {/* Bounties Container */}
-        <div className="max-w-7xl mx-auto">
-          <div className="space-y-4 sm:space-y-6">
-            {bounties.map((bounty) => (
-              <BountyCard key={bounty.id} bounty={bounty} />
-            ))}
+      {/* Main Section */}
+      <main className="w-full max-w-7xl px-4 py-12 flex flex-col items-center">
+        <section className="text-center mb-12">
+          <h1 className="text-5xl font-bold mb-4 text-gray-800 leading-tight">Post or Hunt for <span className="block">bounties</span></h1>
+          <p className="text-lg mb-8 text-gray-500 max-w-xl mx-auto">Got a task that needs doing? Create a bounty and let the community help. Want to earn? Browse and apply for open bounties.</p>
+          <div className="flex justify-center gap-4 mb-10">
+            <Link href="/create">
+              <button className="bg-gray-900 text-white px-6 py-2 rounded-full font-semibold shadow hover:bg-gray-800 transition">Create Bounty</button>
+            </Link>
+            <Link href="/bounties">
+              <button className="border border-gray-300 text-gray-900 px-6 py-2 rounded-full font-semibold bg-white hover:bg-gray-100 transition">Browse Bounties</button>
+            </Link>
           </div>
-        </div>
+          <div className="flex justify-center">
+            <div className="bg-white rounded-2xl shadow flex items-center justify-center w-[600px] h-[220px]">
+              <img src="https://pin.it/2DvEOWgyE" alt="Play" className="h-16 w-16 opacity-40" />
+            </div>
+          </div>
+        </section>
+        {/* Info Grid */}
+        <section className="w-full flex flex-col gap-8 mb-12">
+          {/* Bounty Creators Card */}
+          <div className="bg-white rounded-2xl shadow flex flex-row min-h-[220px] overflow-hidden">
+            {/* Text Content (left half) */}
+            <div className="flex-1 flex flex-col justify-center px-8 py-6">
+              <div className="flex items-center mb-2">
+                <span className="text-2xl mr-2">🧑‍💻</span>
+                <span className="text-xs text-gray-500 font-semibold">For Bounty Creators</span>
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Need something done? Let the community handle it.</h2>
+              <p className="text-gray-500 text-sm">Post a task, set a reward, and get high-quality submissions from talented contributors, fast and hassle-free.</p>
+            </div>
+            {/* Image Placeholder (right half) */}
+            <div className="flex-1 flex items-center justify-center bg-gray-100">
+              <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                {/* You can replace this with an actual image later */}
+                <img src="https://hackersonlineclub.com/wp-content/uploads/2019/05/Bug-Bounty-img.png" alt="Bounty" />
+              </div>
+            </div>
+          </div>
+          {/* Contributors Card */}
+          <div className="bg-white rounded-2xl shadow flex flex-row min-h-[220px] overflow-hidden">
+            {/* Image Placeholder (left half) */}
+            <div className="flex-1 flex items-center justify-center bg-gray-100">
+              <div className="w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
+                {/* You can replace this with an actual image later */}
+                <img src="https://i.pinimg.com/1200x/e4/9a/22/e49a22f910418c6cf79cb7534c3c0d8e.jpg" alt="Contributor" />
+              </div>
+            </div>
+            {/* Text Content (right half) */}
+            <div className="flex-1 flex flex-col justify-center px-8 py-6">
+              <div className="flex items-center mb-2">
+                <span className="text-2xl mr-2">💼</span>
+                <span className="text-xs text-gray-500 font-semibold">For Contributors</span>
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Earn by doing what you’re good at.</h2>
+              <p className="text-gray-500 text-sm">Find tasks that match your skills, submit your work, and get rewarded in crypto. Simple as ABC</p>
+            </div>
+          </div>
+        </section>
+        {/* Opportunities & Trending */}
+        <section className="w-full grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+          {/* New Opportunities */}
+          <div>
+            <h2 className="text-xl font-bold mb-4">New Opportunities</h2>
+            <div className="flex flex-col gap-4">
+              <div className="bg-white p-4 rounded-lg shadow flex items-center gap-4">
+                <img src="/download (2) 1.png" alt="Icon" className="h-12 w-12 rounded-full object-cover" />
+                <div className="flex-1">
+                  <h3 className="font-semibold">Write a beginner-friendly guide to using Slush Wallet</h3>
+                  <div className="flex items-center text-xs text-gray-400 gap-2">Due in 7 days</div>
+                </div>
+                <span className="text-blue-500 font-bold">1200 USDC</span>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow flex items-center gap-4">
+                <img src="/cOMMUNITY CARD (1).png" alt="Icon" className="h-12 w-12 rounded-full object-cover" />
+                <div className="flex-1">
+                  <h3 className="font-semibold">Create a two-minutes video guide for suilend.</h3>
+                  <div className="flex items-center text-xs text-gray-400 gap-2">Due in 7 days</div>
+                </div>
+                <span className="text-blue-500 font-bold">1200 USDC</span>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow flex items-center gap-4">
+                <img src="/cOMMUNITY CARD (2).png" alt="Icon" className="h-12 w-12 rounded-full object-cover" />
+                <div className="flex-1">
+                  <h3 className="font-semibold">Create a two-minutes video guide for suilend.</h3>
+                  <div className="flex items-center text-xs text-gray-400 gap-2">Due in 7 days</div>
+                </div>
+                <span className="text-blue-500 font-bold">1200 USDC</span>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow flex items-center gap-4">
+                <img src="/cOMMUNITY CARD.png" alt="Icon" className="h-12 w-12 rounded-full object-cover" />
+                <div className="flex-1">
+                  <h3 className="font-semibold">Create a two-minutes video guide for suilend.</h3>
+                  <div className="flex items-center text-xs text-gray-400 gap-2">Due in 7 days</div>
+                </div>
+                <span className="text-blue-500 font-bold">1200 USDC</span>
+              </div>
+            </div>
+            <div className="flex justify-center mt-4">
+              <Link href="/bounties">
+                <button className="border border-gray-300 text-gray-900 px-4 py-1 rounded-full bg-white hover:bg-gray-100 transition text-sm">Show all</button>
+              </Link>
+            </div>
+          </div>
+          {/* Trending */}
+          <div>
+            <h2 className="text-xl font-bold mb-4">Trending</h2>
+            <div className="flex flex-col gap-4">
+              <div className="bg-white p-4 rounded-lg shadow flex items-center gap-4">
+                <img src="/download (3) 1.png" alt="Icon" className="h-12 w-12 rounded-full object-cover" />
+                <div className="flex-1">
+                  <h3 className="font-semibold">Create a two-minutes video guide for suilend.</h3>
+                  <div className="flex items-center text-xs text-gray-400 gap-2">Due in 10 days</div>
+                </div>
+                <span className="text-blue-500 font-bold">1,000 USDC</span>
+              </div>
+              <div className="bg-white p-4 rounded-lg shadow flex items-center gap-4">
+                <img src="/download (3) 2.png" alt="Icon" className="h-12 w-12 rounded-full object-cover" />
+                <div className="flex-1">
+                  <h3 className="font-semibold">Create a two-minutes video guide for suilend.</h3>
+                  <div className="flex items-center text-xs text-gray-400 gap-2">Due in 10 days</div>
+                </div>
+                <span className="text-blue-500 font-bold">1,000 USDC</span>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
-};
-
-export default CommunityBounties;
+}
