@@ -40,8 +40,9 @@ export default function CommunityEventsPage(){
       description: "Join our vibrant community in Ghana where we explore the latest developments in blockchain technology, share knowledge, and build connections with fellow enthusiasts.",
       image: "https://i.ibb.co/LDDGGYdF/Screenshot-2025-06-24-141355.png",
       category: "Community",
-      link: '/communities/ghana',
-      flagIcon: "/Ghana (GH).svg"
+      link: '/communities/ghana', // Updated to use dynamic route
+      flagIcon: "/Ghana (GH).svg",
+      slug: "ghana"
     },
     {
       id: 2,
@@ -49,8 +50,9 @@ export default function CommunityEventsPage(){
       description: "Join our vibrant community in India where we explore the latest developments in blockchain technology, share knowledge, and build connections with fellow enthusiasts.",
       image: "https://i.ibb.co/5hdNKtFT/Screenshot-2025-07-28-235207.png",
       category: "Community",
-      link: '/communities/india',
-      flagIcon: "/Portugal (PT) (3).svg"
+      link: '/communities/india', // Updated to use dynamic route
+      flagIcon: "/Portugal (PT) (3).svg",
+      slug: "india"
     },
     {
       id: 3,
@@ -58,8 +60,9 @@ export default function CommunityEventsPage(){
       description: "Join our vibrant community in Korea where we explore the latest developments in blockchain technology, share knowledge, and build connections with fellow enthusiasts.",
       image: "/cOMMUNITY CARD.png",
       category: "Community",
-      link: '/communities/korea',
-      flagIcon: "/Portugal (PT).svg"
+      link: '/communities/korea', // Updated to use dynamic route
+      flagIcon: "/Portugal (PT).svg",
+      slug: "korea"
     },
     {
       id: 4,
@@ -67,8 +70,9 @@ export default function CommunityEventsPage(){
       description: "The Kenyan chapter of our global community brings together developers, entrepreneurs, and blockchain enthusiasts to collaborate and learn together.",
       image: "https://i.ibb.co/YBvqHqsp/Screenshot-2025-06-24-030451.png",
       category: "Community",
-      link: '/communities/kenya',
-      flagIcon: "/Portugal (PT) (1).svg"
+      link: '/communities/kenya', // Updated to use dynamic route
+      flagIcon: "/Portugal (PT) (1).svg",
+      slug: "kenya"
     },
     {
       id: 5,
@@ -76,8 +80,9 @@ export default function CommunityEventsPage(){
       description: "Nigeria's largest blockchain community focused on SUI ecosystem development, education, and creating opportunities for local developers and entrepreneurs.",
       image: "https://i.ibb.co/0jzvvMmY/Screenshot-2025-07-28-234111.png",
       category: "Community",
-      link: '/communities/nigeria',
-      flagIcon: "/Nigeria (NG).svg"
+      link: '/communities/nigeria', // Updated to use dynamic route
+      flagIcon: "/Nigeria (NG).svg",
+      slug: "nigeria"
     },
     {
       id: 6,
@@ -85,8 +90,9 @@ export default function CommunityEventsPage(){
       description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
       image: "https://i.ibb.co/QjjYs0rH/Screenshot-2025-07-28-232824.png",
       category: "Development",
-      link: '/communities/pakistan',
-      flagIcon: "/Pakistan (PK).svg"
+      link: '/communities/pakistan', // Updated to use dynamic route
+      flagIcon: "/Pakistan (PK).svg",
+      slug: "pakistan"
     },
     {
       id: 7,
@@ -94,8 +100,9 @@ export default function CommunityEventsPage(){
       description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
       image: "https://i.ibb.co/NgpSDJMW/Screenshot-2025-07-28-233205.png",
       category: "Development",
-      link: '/communities/gaming-africa',
-      flagIcon: "/Vietnam (VN).svg"
+      link: '/communities/vietnam', // Updated to use dynamic route
+      flagIcon: "/Vietnam (VN).svg",
+      slug: "vietnam"
     },
     {
       id: 8,
@@ -103,8 +110,9 @@ export default function CommunityEventsPage(){
       description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
       image:"https://i.ibb.co/Y4k6M6p1/Screenshot-2025-07-28-235104.png",
       category: "Development",
-      link: '/communities/portugal',
-      flagIcon: "/Portugal (PT) (2).svg"
+      link: '/communities/portugal', // Updated to use dynamic route
+      flagIcon: "/Portugal (PT) (2).svg",
+      slug: "portugal"
     },
     {
       id: 9,
@@ -112,8 +120,9 @@ export default function CommunityEventsPage(){
       description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
       image: "https://i.ibb.co/Jjf3bj6M/Screenshot-2025-07-28-234949.png",
       category: "Development",
-      link: '/communities/turkiye',
-      flagIcon: "/Portugal (PT) (4).svg"
+      link: '/communities/turkiye', // Updated to use dynamic route
+      flagIcon: "/Portugal (PT) (4).svg",
+      slug: "turkiye"
     },
     {
       id: 10,
@@ -121,8 +130,9 @@ export default function CommunityEventsPage(){
       description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
       image: "https://i.ibb.co/M58pNWTd/Screenshot-2025-07-28-234306.png",
       category: "Development",
-      link: '/communities/gaming-africa',
-      flagIcon: "/Portugal (PT) (5).svg"
+      link: '/communities/japan', // Updated to use dynamic route
+      flagIcon: "/Portugal (PT) (5).svg",
+      slug: "japan"
     },
     {
       id: 11,
@@ -130,8 +140,9 @@ export default function CommunityEventsPage(){
       description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
       image: "https://i.ibb.co/cXJkR8pz/Screenshot-2025-07-28-234503.png",
       category: "Development",
-      link: '/communities/china',
-      flagIcon: "/Portugal (PT) (6).svg"
+      link: '/communities/china', // Updated to use dynamic route
+      flagIcon: "/Portugal (PT) (6).svg",
+      slug: "china"
     },
     {
       id: 12,
@@ -139,17 +150,19 @@ export default function CommunityEventsPage(){
       description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
       image: "https://i.ibb.co/5gcT3VTc/Screenshot-2025-07-28-233947.png",
       category: "Development",
-      link: '/communities/uganda',
-      flagIcon: "/Portugal (PT) (7).svg"
+      link: '/communities/uganda', // Updated to use dynamic route
+      flagIcon: "/Portugal (PT) (7).svg",
+      slug: "uganda"
     },
     {
       id: 13,
-      title: "SUI Community Phillipines",
+      title: "SUI Community Philippines",
       description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
       image: "https://i.ibb.co/8LR9KvLg/Screenshot-2025-07-28-233810.png",
       category: "Development",
-      link: '/communities/phillipines',
-      flagIcon: "/Portugal (PT) (8).svg"
+      link: '/communities/philippines', // Updated to use dynamic route
+      flagIcon: "/Portugal (PT) (8).svg",
+      slug: "philippines"
     },
     {
       id: 15,
@@ -157,8 +170,9 @@ export default function CommunityEventsPage(){
       description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
       image: "https://i.ibb.co/zHGXK8DM/Screenshot-2025-07-28-233403.png",
       category: "Development",
-      link: '/communities/gaming-africa',
-      flagIcon: "/Uganda (UG).svg"
+      link: '/communities/indonesia', // Updated to use dynamic route
+      flagIcon: "/Uganda (UG).svg",
+      slug: "indonesia"
     },
     {
       id: 16,
@@ -166,8 +180,9 @@ export default function CommunityEventsPage(){
       description: "A dedicated space for gamers and blockchain enthusiasts to enjoy themselves and share their passion for gaming.",
       image: "https://i.ibb.co/pjRM3qg1/Screenshot-2025-07-28-235342.png",
       category: "Development",
-      link: '/communities/france',
-      flagIcon: "/Uganda (UG) (1).svg"
+      link: '/communities/france', // Updated to use dynamic route
+      flagIcon: "/Uganda (UG) (1).svg",
+      slug: "france"
     },
   ]
   
@@ -234,6 +249,16 @@ export default function CommunityEventsPage(){
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        {/* Page Title */}
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            Sui Communities Worldwide
+          </h1>
+          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            Join vibrant communities across the globe where blockchain enthusiasts explore the Sui ecosystem
+          </p>
+        </div>
+
         {/* Search Bar */}
         <div className="mb-8 w-full sm:w-9/12 md:w-2/3 mx-auto">
           <div className="relative flex items-center">
@@ -289,7 +314,7 @@ export default function CommunityEventsPage(){
                         className="block w-full max-w-[80%] mr-2"
                       >
                         
-                      <button className='w-auto text-sm font-normal p-2.5 bg-gray-100 text-black border-2 border-black rounded-full flex items-center justify-center'>
+                      <button className='w-auto text-sm font-normal p-2.5 bg-gray-100 text-black border-2 border-black rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors'>
                         View Community Events  
                       </button>
 
